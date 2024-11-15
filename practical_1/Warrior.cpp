@@ -3,6 +3,9 @@
 using namespace sf;
 using namespace std;
 
+const int spriteWidth = 192;
+const int spriteHeight = 192;
+
 Warrior::Warrior()
     : frameCount(6), currentFrame(0), currentRow(0),
     frameDuration(0.1f), isMoving(false), isFighting(false) {
@@ -13,7 +16,7 @@ Warrior::Warrior()
     sprite.setTexture(texture);
 
     // Set the initial crop rectangle (192x192)
-    spriteRect = IntRect(0, 0, 192, 192);
+    spriteRect = IntRect(0, 0, spriteWidth, spriteHeight);
     sprite.setTextureRect(spriteRect); // Apply the crop to the sprite
 }
 
@@ -65,8 +68,8 @@ void Warrior::animate() {
         currentFrame = (currentFrame + 1) % frameCount; // Loop back to the first frame after the last frame
 
         // Update the texture rectangle for the current frame and row
-        spriteRect.left = currentFrame * 192;    // Update the "left" part of the rect to show the next frame
-        spriteRect.top = currentRow * 192;       // Update the "top" part of the rect to switch between rows (standing, running, fighting)
+        spriteRect.left = currentFrame * spriteWidth;    // Update the "left" part of the rect to show the next frame
+        spriteRect.top = currentRow * spriteHeight;       // Update the "top" part of the rect to switch between rows (standing, running, fighting)
         sprite.setTextureRect(spriteRect);       // Apply the updated rectangle to the sprite
 
         // Reset the animation clock
