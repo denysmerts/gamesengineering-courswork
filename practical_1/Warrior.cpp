@@ -10,7 +10,7 @@ Warrior::Warrior()
     : frameCount(6), currentFrame(0), currentRow(0),
     frameDuration(0.1f), isMoving(false), isFighting(false) {
     // Load the sprite sheet texture
-    if (!texture.loadFromFile("assets/warrior.png")) {
+    if (!texture.loadFromFile("output/assets/warrior.png")) {
         cerr << "Error loading texture!" << endl;
     }
     sprite.setTexture(texture);
@@ -27,10 +27,10 @@ void Warrior::update() {
 
     // Update the position based on movement
     if (isMoving) {
-        if (Keyboard::isKeyPressed(Keyboard::W)) sprite.move(0, -5.f); // Move up
-        if (Keyboard::isKeyPressed(Keyboard::S)) sprite.move(0, 5.f);  // Move down
-        if (Keyboard::isKeyPressed(Keyboard::A)) sprite.move(-5.f, 0); // Move left
-        if (Keyboard::isKeyPressed(Keyboard::D)) sprite.move(5.f, 0);  // Move right
+        if (Keyboard::isKeyPressed(Keyboard::W)) sprite.move(0, -1.f); // Move up
+        if (Keyboard::isKeyPressed(Keyboard::S)) sprite.move(0, 1.f);  // Move down
+        if (Keyboard::isKeyPressed(Keyboard::A)) sprite.move(-1.f, 0); // Move left
+        if (Keyboard::isKeyPressed(Keyboard::D)) sprite.move(1.f, 0);  // Move right
     }
 }
 
@@ -49,15 +49,23 @@ void Warrior::handleInput() {
         Keyboard::isKeyPressed(Keyboard::D)) {
         isMoving = true;
         currentRow = 1; // Set to running animation
+
+        // Flip sprite direction based on A key (left movement)
+        if (Keyboard::isKeyPressed(Keyboard::A)) {
+            sprite.setScale(-1, 1); // Flip horizontally
+        }
+        else if (Keyboard::isKeyPressed(Keyboard::D)) {
+            sprite.setScale(1, 1); // Restore original orientation
+        }
     }
     else {
         currentRow = 0; // Set to standing animation
     }
 
-    // Check for fighting input (F key)
-    if (Keyboard::isKeyPressed(Keyboard::F)) {
+    // Check for fighting input (mouse left click)
+    if (Mouse::isButtonPressed(Mouse::Left)) {
         isFighting = true; // Set to fighting animation
-        currentRow = 2;    // Set the row to fighting (assumed to be row 2 in the sprite sheet)
+        currentRow = 2;    // Set the row to fighting
     }
 }
 

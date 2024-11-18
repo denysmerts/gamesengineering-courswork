@@ -2,6 +2,7 @@
 #include <SFML/Window.hpp>
 #include <iostream>
 #include "Warrior.h"  
+#include "../../build/Enemy.h"
 
 using namespace std;
 using namespace sf;
@@ -17,7 +18,7 @@ int main() {
 
     // Load the background texture
     Texture backgroundTexture;
-    if (!backgroundTexture.loadFromFile("assets/bg.png")) {
+    if (!backgroundTexture.loadFromFile("output/assets/bg.png")) {
         cerr << "Failed to load background image!" << endl;
         return -1;
     }
@@ -26,7 +27,7 @@ int main() {
 
     // Load the font for the text
     Font font;
-    if (!font.loadFromFile("assets/IrishGrover-Regular.ttf")) {
+    if (!font.loadFromFile("output/assets/IrishGrover-Regular.ttf")) {
         cerr << "Failed to load font!" << endl;
         return -1;
     }
@@ -43,7 +44,7 @@ int main() {
 
     // Load the custom cursor image
     Texture cursorTexture;
-    if (!cursorTexture.loadFromFile("assets/cursor.png")) {
+    if (!cursorTexture.loadFromFile("output/assets/cursor.png")) {
         cerr << "Failed to load custom cursor!" << endl;
         return -1;
     }
@@ -59,6 +60,15 @@ int main() {
     Warrior warrior;
 
     // Main game loop
+    Texture level1Texture;
+    if (!level1Texture.loadFromFile("output/assets/level1.png")) {
+        cerr << "Failed to load level 1 background!" << endl;
+        return -1;
+    }
+    Sprite level1Background(level1Texture);
+
+    Enemy enemy;
+
     while (window.isOpen()) {
         Event event;
         while (window.pollEvent(event)) {
@@ -86,16 +96,28 @@ int main() {
             window.draw(startButton);
         }
         else if (currentState == GameState::GameScreen) {
-            window.clear(Color::Black);
+            window.draw(level1Background);
 
             // Update the warrior in the game screen
             warrior.update();  // Update the warrior's state (movement, animation)
             warrior.render(window);  // Render the warrior
 
-            Text gameTitle("Game Screen", font, 50);
-            gameTitle.setPosition(250, 250);
-            gameTitle.setFillColor(Color::White);
-            window.draw(gameTitle);
+            // Update and render enemy
+            enemy.update();
+            enemy.moveTowardsPlayer(warrior.getSprite().getPosition());
+
+            // Check for collision
+            if (enemy.checkCollision(warrior.getSprite())) {
+                cout << "Enemy collided with warrior!" << endl;
+                // Add additional collision handling logic here
+            }
+
+            enemy.render(window);
+
+            Text levelTitle("Level 1", font, 50);
+            levelTitle.setPosition(250, 0);
+            levelTitle.setFillColor(Color::White);
+            window.draw(levelTitle);
         }
 
         // Update and draw the custom cursor
