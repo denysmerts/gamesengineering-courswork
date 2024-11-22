@@ -33,7 +33,7 @@ void Enemy::update() {
     float windowHeight = 600.0f;
 
     // Get sprite bounds
-    sf::FloatRect spriteBounds = sprite.getGlobalBounds();
+    FloatRect spriteBounds = sprite.getGlobalBounds();
 
     // Horizontal boundary check
     if (sprite.getPosition().x < 0)

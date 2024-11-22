@@ -2,10 +2,20 @@
 #include <SFML/Window.hpp>
 #include <iostream>
 #include "Warrior.h"  
-#include "../../build/Enemy.h"
-
+#include "Enemy.h"
 using namespace std;
 using namespace sf;
+
+// Boundary restriction function
+void restrictToWindow(Sprite& sprite, const RenderWindow& window) {
+    FloatRect bounds = sprite.getGlobalBounds();
+    Vector2u windowSize = window.getSize();
+
+    sprite.setPosition(
+        std::max(0.f, std::min(sprite.getPosition().x, windowSize.x - bounds.width)),
+        std::max(0.f, std::min(sprite.getPosition().y, windowSize.y - bounds.height))
+    );
+}
 
 enum class GameState {
     StartScreen,
@@ -22,7 +32,6 @@ int main() {
         cerr << "Failed to load background image!" << endl;
         return -1;
     }
-
     Sprite background(backgroundTexture);
 
     // Load the font for the text
@@ -34,12 +43,12 @@ int main() {
 
     // Create the title text
     Text title("Goblin Siege", font, 100);
-    title.setPosition(120, 50);  // Adjust position as needed
+    title.setPosition(120, 50);
     title.setFillColor(Color::White);
 
     // Create the "Start" button
     Text startButton("Start Game", font, 40);
-    startButton.setPosition(300, 400);  // Adjust position as needed
+    startButton.setPosition(300, 400);
     startButton.setFillColor(Color::White);
 
     // Load the custom cursor image
@@ -59,16 +68,18 @@ int main() {
     // Create an instance of Warrior
     Warrior warrior;
 
-    // Main game loop
+    // Load level 1 background
     Texture level1Texture;
-    if (!level1Texture.loadFromFile("output/assets/level1.png")) {
+    if (!level1Texture.loadFromFile("output/assets/bg.png")) {
         cerr << "Failed to load level 1 background!" << endl;
         return -1;
     }
     Sprite level1Background(level1Texture);
 
+    // Create an enemy
     Enemy enemy;
 
+    // Main game loop
     while (window.isOpen()) {
         Event event;
         while (window.pollEvent(event)) {
@@ -90,6 +101,7 @@ int main() {
 
         // Render the current screen based on the game state
         window.clear();
+
         if (currentState == GameState::StartScreen) {
             window.draw(background);
             window.draw(title);
@@ -99,19 +111,16 @@ int main() {
             window.draw(level1Background);
 
             // Update the warrior in the game screen
-            warrior.update();  // Update the warrior's state (movement, animation)
-            warrior.render(window);  // Render the warrior
+            warrior.update();
+            // Restrict warrior to window boundaries
+            restrictToWindow(warrior.getSprite(), window);
+            warrior.render(window);
 
             // Update and render enemy
             enemy.update();
             enemy.moveTowardsPlayer(warrior.getSprite().getPosition());
-
-            // Check for collision
-            if (enemy.checkCollision(warrior.getSprite())) {
-                cout << "Enemy collided with warrior!" << endl;
-                // Add additional collision handling logic here
-            }
-
+            // Restrict enemy to window boundaries
+            restrictToWindow(enemy.getSprite(), window);
             enemy.render(window);
 
             Text levelTitle("Level 1", font, 50);
