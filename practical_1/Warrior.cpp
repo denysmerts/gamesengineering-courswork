@@ -22,15 +22,31 @@ Warrior::Warrior()
 
 void Warrior::update() {
     handleInput(); // Handle movement and fight input
+    animate(); 
+    float windowWidth = 800.0f;
+    float windowHeight = 600.0f;
 
-    animate(); // Update animation based on state (moving, fighting, standing)
+    // Get sprite bounds
+    sf::FloatRect spriteBounds = sprite.getGlobalBounds();
+
+    // Horizontal boundary check
+    if (sprite.getPosition().x < 0)
+        sprite.setPosition(0, sprite.getPosition().y);
+    if (sprite.getPosition().x + spriteBounds.width > windowWidth)
+        sprite.setPosition(windowWidth - spriteBounds.width, sprite.getPosition().y);
+
+    // Vertical boundary check
+    if (sprite.getPosition().y < 0)
+        sprite.setPosition(sprite.getPosition().x, 0);
+    if (sprite.getPosition().y + spriteBounds.height > windowHeight)
+        sprite.setPosition(sprite.getPosition().x, windowHeight - spriteBounds.height);
 
     // Update the position based on movement
     if (isMoving) {
-        if (Keyboard::isKeyPressed(Keyboard::W)) sprite.move(0, -1.f); // Move up
-        if (Keyboard::isKeyPressed(Keyboard::S)) sprite.move(0, 1.f);  // Move down
-        if (Keyboard::isKeyPressed(Keyboard::A)) sprite.move(-1.f, 0); // Move left
-        if (Keyboard::isKeyPressed(Keyboard::D)) sprite.move(1.f, 0);  // Move right
+        if (Keyboard::isKeyPressed(Keyboard::W)) sprite.move(0, -5.f); // Move up
+        if (Keyboard::isKeyPressed(Keyboard::S)) sprite.move(0, 5.f);  // Move down
+        if (Keyboard::isKeyPressed(Keyboard::A)) sprite.move(-5.f, 0); // Move left
+        if (Keyboard::isKeyPressed(Keyboard::D)) sprite.move(5.f, 0);  // Move right
     }
 }
 
@@ -39,8 +55,10 @@ void Warrior::render(RenderWindow& window) {
 }
 
 void Warrior::handleInput() {
+    // Ignore all input if fighting animation is in progress
+    if (isFighting) return;
+
     isMoving = false; // Reset movement state
-    isFighting = false; // Reset fighting state
 
     // Check for movement input (WASD keys)
     if (Keyboard::isKeyPressed(Keyboard::W) ||
@@ -48,39 +66,51 @@ void Warrior::handleInput() {
         Keyboard::isKeyPressed(Keyboard::A) ||
         Keyboard::isKeyPressed(Keyboard::D)) {
         isMoving = true;
-        currentRow = 1; // Set to running animation
-
-        // Flip sprite direction based on A key (left movement)
-        if (Keyboard::isKeyPressed(Keyboard::A)) {
-            sprite.setScale(-1, 1); // Flip horizontally
-        }
-        else if (Keyboard::isKeyPressed(Keyboard::D)) {
-            sprite.setScale(1, 1); // Restore original orientation
-        }
+        currentRow = 1; // Running animation row
     }
     else {
-        currentRow = 0; // Set to standing animation
+        currentRow = 0; // Idle/standing animation row
     }
 
-    // Check for fighting input (mouse left click)
-    if (Mouse::isButtonPressed(Mouse::Left)) {
-        isFighting = true; // Set to fighting animation
-        currentRow = 2;    // Set the row to fighting
+    // Check for fighting input (F key)
+    if (Keyboard::isKeyPressed(Keyboard::F)) {
+        isFighting = true;   // Set fighting state
+        currentRow = 2;      // Fighting animation row
+        currentFrame = 0;    // Start from the first frame
+        animationClock.restart(); // Reset animation clock
     }
 }
 
+
 void Warrior::animate() {
-    // Update animation based on the elapsed time
+    // Update animation only if enough time has passed
     if (animationClock.getElapsedTime().asSeconds() >= frameDuration) {
-        // Move to the next frame
-        currentFrame = (currentFrame + 1) % frameCount; // Loop back to the first frame after the last frame
+        if (isFighting) {
+            // Fighting animation: Increment frame and check for completion
+            currentFrame++;
+            if (currentFrame >= frameCount) {
+                // Fighting animation complete
+                currentFrame = 0;    // Reset frame to start
+                isFighting = false; // Exit fighting state
+                currentRow = 0;     // Return to idle animation
+            }
+        }
+        else if (isMoving) {
+            // Running animation: Loop through frames
+            currentFrame = (currentFrame + 1) % frameCount;
+        }
+        else {
+            // Idle animation: Loop through frames in the idle row
+            currentFrame = (currentFrame + 1) % frameCount;
+            currentRow = 0; // Ensure we're in the idle animation row
+        }
 
         // Update the texture rectangle for the current frame and row
-        spriteRect.left = currentFrame * spriteWidth;    // Update the "left" part of the rect to show the next frame
-        spriteRect.top = currentRow * spriteHeight;       // Update the "top" part of the rect to switch between rows (standing, running, fighting)
-        sprite.setTextureRect(spriteRect);       // Apply the updated rectangle to the sprite
+        spriteRect.left = currentFrame * spriteWidth;
+        spriteRect.top = currentRow * spriteHeight;
+        sprite.setTextureRect(spriteRect);
 
-        // Reset the animation clock
+        // Restart the animation clock
         animationClock.restart();
     }
 }
