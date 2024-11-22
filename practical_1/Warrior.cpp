@@ -10,7 +10,7 @@ Warrior::Warrior()
     : frameCount(6), currentFrame(0), currentRow(0),
     frameDuration(0.1f), isMoving(false), isFighting(false){
     // Load the sprite sheet texture
-    if (!texture.loadFromFile("assets/warrior.png")) {
+    if (!texture.loadFromFile("output/assets/warrior.png")) {
         cerr << "Error loading texture!" << endl;
     }
     sprite.setTexture(texture);
@@ -22,8 +22,24 @@ Warrior::Warrior()
 
 void Warrior::update() {
     handleInput(); // Handle movement and fight input
+    animate(); 
+    float windowWidth = 800.0f;
+    float windowHeight = 600.0f;
 
-    animate(); // Update animation based on state (moving, fighting, standing)
+    // Get sprite bounds
+    sf::FloatRect spriteBounds = sprite.getGlobalBounds();
+
+    // Horizontal boundary check
+    if (sprite.getPosition().x < 0)
+        sprite.setPosition(0, sprite.getPosition().y);
+    if (sprite.getPosition().x + spriteBounds.width > windowWidth)
+        sprite.setPosition(windowWidth - spriteBounds.width, sprite.getPosition().y);
+
+    // Vertical boundary check
+    if (sprite.getPosition().y < 0)
+        sprite.setPosition(sprite.getPosition().x, 0);
+    if (sprite.getPosition().y + spriteBounds.height > windowHeight)
+        sprite.setPosition(sprite.getPosition().x, windowHeight - spriteBounds.height);
 
     // Update the position based on movement
     if (isMoving) {
@@ -97,6 +113,4 @@ void Warrior::animate() {
         // Restart the animation clock
         animationClock.restart();
     }
-}
-
 

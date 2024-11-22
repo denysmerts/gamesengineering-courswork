@@ -10,6 +10,9 @@ public:
     Warrior();  // Constructor
     void update();        // Update warrior state
     void render(sf::RenderWindow& window);  // Render the warrior
+    Sprite Warrior::getSprite() const {
+        return sprite; // Return actual sprite instead of empty sprite
+    }
 
 private:
     void handleInput();    // Handle keyboard input
