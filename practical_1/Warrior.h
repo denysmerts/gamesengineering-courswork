@@ -8,7 +8,6 @@ using namespace sf;
 class Warrior {
 public:
     Warrior();  // Constructor
-
     void update();        // Update warrior state
     void render(sf::RenderWindow& window);  // Render the warrior
     Sprite Warrior::getSprite() const {
@@ -32,6 +31,8 @@ private:
     float frameDuration;  // Duration for each frame (seconds)
     bool isMoving;        // Check if the warrior is moving
     bool isFighting;      // Check if the warrior is fighting
+ 
+    
    
 };
 

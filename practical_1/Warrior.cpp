@@ -8,7 +8,7 @@ const int spriteHeight = 192;
 
 Warrior::Warrior()
     : frameCount(6), currentFrame(0), currentRow(0),
-    frameDuration(0.1f), isMoving(false), isFighting(false) {
+    frameDuration(0.1f), isMoving(false), isFighting(false){
     // Load the sprite sheet texture
     if (!texture.loadFromFile("output/assets/warrior.png")) {
         cerr << "Error loading texture!" << endl;
@@ -113,4 +113,4 @@ void Warrior::animate() {
         // Restart the animation clock
         animationClock.restart();
     }
-}
+
