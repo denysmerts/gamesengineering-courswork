@@ -4,7 +4,7 @@
 using namespace std;
 
 Warrior::Warrior()
-    : Character(6, 0.1f, 192, 192), isMoving(false), isFighting(false) {
+    : Character(6, 0.1f, 192, 192), isMoving(false), isFighting(false), isFacingLeft(false) {
     initializeSprite();
 }
 
@@ -34,51 +34,59 @@ void Warrior::handleInput() {
         sprite.move(-5.f, 0);
         isMoving = true;
         currentRow = 1;
+
+        // Flip the sprite to face left
+        if (!isFacingLeft) {
+            sprite.setScale(-1.f, 1.f); // Flip horizontally
+            sprite.setOrigin(spriteWidth, 0); // Adjust origin to keep alignment
+            isFacingLeft = true;
+        }
     }
     if (Keyboard::isKeyPressed(Keyboard::D)) {
         sprite.move(5.f, 0);
         isMoving = true;
         currentRow = 1;
+
+        // Flip the sprite to face right
+        if (isFacingLeft) {
+            sprite.setScale(1.f, 1.f); // Reset flip
+            sprite.setOrigin(0, 0);   // Reset origin
+            isFacingLeft = false;
+        }
     }
 
-   
     if (Keyboard::isKeyPressed(Keyboard::F) && !isFighting) {
         isFighting = true;
         currentRow = 2;
-        currentFrame = 0; 
+        currentFrame = 0;
         animationClock.restart();
     }
 
     if (!isMoving && !isFighting) {
-        currentRow = 0; 
+        currentRow = 0;
     }
 }
 
 void Warrior::update() {
-    handleInput(); 
-    animate();     
-
+    handleInput();
+    animate();
     updatePosition();
 }
 
 void Warrior::animate() {
     if (animationClock.getElapsedTime().asSeconds() >= frameDuration) {
         if (isFighting) {
-            
             currentFrame++;
             if (currentFrame >= frameCount) {
-                
                 currentFrame = 0;
                 isFighting = false;
                 currentRow = 0;
             }
         }
         else if (isMoving) {
-            
             currentFrame = (currentFrame + 1) % frameCount;
         }
         else {
-           
             currentFrame = (currentFrame + 1) % frameCount;
         }
 

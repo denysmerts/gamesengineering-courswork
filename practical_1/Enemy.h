@@ -10,14 +10,13 @@ class Enemy : public Character {
 public:
     Enemy();
     void update() override;                      
-    void moveTowardsPlayer(sf::Vector2f playerPosition);
     Sprite getSprite() const;
+    void moveTowardsPlayer(sf::Vector2f playerPosition);
+    void updateFacingDirection(const sf::Vector2f& direction);
 
 private:
     float moveSpeed;
     bool isFacingLeft;
-
-    void updateFacingDirection(const sf::Vector2f& direction);
 };
 
 #endif

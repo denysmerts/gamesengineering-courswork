@@ -14,9 +14,10 @@ public:
         return sprite; 
     }
 
-
+private:
     bool isMoving;
     bool isFighting;
+    bool isFacingLeft;
 };
 
 #endif
