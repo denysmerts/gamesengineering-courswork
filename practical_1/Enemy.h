@@ -1,29 +1,23 @@
 #ifndef ENEMY_H
 #define ENEMY_H
+
+#include "Character.h"
 #include <SFML/Graphics.hpp>
+
 using namespace sf;
 
-class Enemy {
+class Enemy : public Character {
 public:
     Enemy();
-    void update();
-    void render(RenderWindow& window);
+    void update() override;                      
+    void moveTowardsPlayer(sf::Vector2f playerPosition);
     Sprite getSprite() const;
-    void moveTowardsPlayer(Vector2f playerPosition);
-    bool isFacingLeft = false;
 
 private:
-    Texture texture;
-    Sprite sprite;
-    Clock animationClock;
-
-    int frameCount;
-    int currentFrame;
-    int currentRow;
-    float frameDuration;
-    bool isMoving;
     float moveSpeed;
+    bool isFacingLeft;
 
-    void animate();
+    void updateFacingDirection(const sf::Vector2f& direction);
 };
+
 #endif
