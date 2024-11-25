@@ -1,10 +1,13 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <iostream>
-#include "Warrior.h"  
+#include "Map.h"  
+#include "Warrior.h"
 #include "Enemy.h"
+
 using namespace std;
 using namespace sf;
+
 
 // Boundary restriction function
 void restrictToWindow(Sprite& sprite, const RenderWindow& window) {
@@ -17,6 +20,7 @@ void restrictToWindow(Sprite& sprite, const RenderWindow& window) {
     );
 }
 
+
 enum class GameState {
     StartScreen,
     DialogueScreen,
@@ -26,7 +30,8 @@ enum class GameState {
 };
 
 int main() {
-    RenderWindow window(VideoMode(800, 600), "Goblin Siege");
+
+    RenderWindow window(VideoMode(1920, 1080), "Goblin Siege");
     window.setFramerateLimit(60);
 
     // Load the background texture
@@ -68,58 +73,21 @@ int main() {
     // Set the initial game state
     GameState currentState = GameState::StartScreen;
 
-    // Dialogue box setup
-    RectangleShape dialogueBox;
-    dialogueBox.setSize(Vector2f(600, 200));
-    dialogueBox.setPosition(100, 350);
-    dialogueBox.setFillColor(Color(0, 0, 0, 200)); // Semi-transparent black
-    dialogueBox.setOutlineColor(Color::White);
-    dialogueBox.setOutlineThickness(2);
 
-    Text dialogueText("Village Elder: \nBrave knight, the goblins are attacking! \nYou have been trained for this moment, \nDefend our village and defeat the enemy!", font, 30);
-    dialogueText.setPosition(120, 380);
-    dialogueText.setFillColor(Color::White);
+    // Initialize map, warrior, and enemy objects outside the loop
+    Map map;
 
-    Text continueText("Press SPACE to continue", font, 20);
-    continueText.setPosition(280, 530);
-    continueText.setFillColor(Color::Yellow);
-
-    // Pause screen elements
-    Text pauseTitle("GAME PAUSED", font, 80);
-    pauseTitle.setPosition(150, 200);
-    pauseTitle.setFillColor(Color::White);
-
-    Text resumeText("Press R to Resume", font, 40);
-    resumeText.setPosition(250, 350);
-    resumeText.setFillColor(Color::Yellow);
-
-    Text quitText("Press Q to Quit", font, 40);
-    quitText.setPosition(250, 420);
-    quitText.setFillColor(Color::Yellow);
-
-    // Game Over screen elements
-    Text gameOverText("Game Over! You have failed us.", font, 50);
-    gameOverText.setPosition(100, 250);
-    gameOverText.setFillColor(Color::Red);
-
-    Text restartText("Press R to Restart", font, 30);
-    restartText.setPosition(250, 350);
-    restartText.setFillColor(Color::Yellow);
-
-    // Create an instance of Warrior
     Warrior warrior;
-
-    // Load level 1 background
-    Texture level1Texture;
-    if (!level1Texture.loadFromFile("output/assets/bg.png")) {
-        cerr << "Failed to load level 1 background!" << endl;
-        return -1;
-    }
-
-    Sprite level1Background(level1Texture);
-
-    // Create an enemy
     Enemy enemy;
+
+
+    warrior.getSprite().setPosition(200, 200); // Set an initial position for the player
+
+    // Load assets for map and set initial player position
+    map.load();
+
+
+
 
     // Timer setup for Level 1
     Clock levelClock;
@@ -206,6 +174,7 @@ int main() {
             window.draw(continueText);
         }
         else if (currentState == GameState::GameScreen) {
+
             window.draw(level1Background);
 
             // Update and render warrior
@@ -213,45 +182,18 @@ int main() {
             restrictToWindow(warrior.getSprite(), window);
             warrior.render(window);
 
-            // Update and render enemy
+
+            // Update phase
+            warrior.update(); // Update warrior and pass map for boundaries
             enemy.update();
-            enemy.moveTowardsPlayer(warrior.getSprite().getPosition());
-            restrictToWindow(enemy.getSprite(), window);
+
+            map.update();
+
+            // Render phase
+            map.render(window);
             enemy.render(window);
+            warrior.render(window);
 
-            // Update timer text based on elapsed time
-            int elapsedSeconds = static_cast<int>(levelClock.getElapsedTime().asSeconds());
-            int remainingTime = max(0, levelDuration - elapsedSeconds);
-            timerText.setString("Time: " + std::to_string(remainingTime));
-            window.draw(timerText);
-
-            Text levelTitle("Level 1", font, 50);
-            levelTitle.setPosition(250, 0);
-            levelTitle.setFillColor(Color::White);
-            window.draw(levelTitle);
-
-            // Check if time has run out and handle accordingly (e.g., end level)
-            if (remainingTime <= 0) {
-                cout << "Time's up! Level over." << endl;
-                currentState = GameState::GameOverScreen;
-            }
-        }
-        else if (currentState == GameState::PauseScreen) {
-            RectangleShape overlay(Vector2f(800, 600));
-            overlay.setFillColor(Color(0, 0, 0, 150));
-            window.draw(overlay);
-
-            window.draw(pauseTitle);
-            window.draw(resumeText);
-            window.draw(quitText);
-        }
-        else if (currentState == GameState::GameOverScreen) {
-            RectangleShape overlay(Vector2f(800, 600));
-            overlay.setFillColor(Color(0, 0, 0, 150));
-            window.draw(overlay);
-
-            window.draw(gameOverText);
-            window.draw(restartText);
         }
 
         customCursor.setPosition(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
