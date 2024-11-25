@@ -118,11 +118,11 @@ int main() {
     Enemy enemy;
 
     // Timer setup for Level 1
-    Clock levelClock;
-    int levelDuration = 60; // Level duration in seconds
-    Text timerText("", font, 30);
-    timerText.setPosition(650, 10);
-    timerText.setFillColor(Color::White);
+    //Clock levelClock;
+    //int levelDuration = 60; // Level duration in seconds
+    //Text timerText("", font, 30);
+    //timerText.setPosition(650, 10);
+    //timerText.setFillColor(Color::White);
 
     // Load level 1 background
     Texture level1Texture;
@@ -143,10 +143,10 @@ int main() {
                 if (event.key.code == Keyboard::Escape && currentState == GameState::GameScreen) {
                     currentState = GameState::PauseScreen;
                 }
-                else if (event.key.code == Keyboard::Escape && currentState == GameState::PauseScreen) {
+               /* else if (event.key.code == Keyboard::Escape && currentState == GameState::PauseScreen) {
                     currentState = GameState::GameScreen;
                     levelClock.restart();
-                }
+                }*/
             }
 
             // Handle mouse click on "Start" button
@@ -162,7 +162,7 @@ int main() {
                 event.type == Event::KeyPressed &&
                 event.key.code == Keyboard::Space) {
                 currentState = GameState::GameScreen;
-                levelClock.restart();
+                /*levelClock.restart();*/
             }
 
             // Handle restart from Game Over screen
@@ -204,16 +204,16 @@ int main() {
             restrictToWindow(enemy.getSprite(), window);
             enemy.render(window);
 
-            // Update timer
-            int elapsedSeconds = static_cast<int>(levelClock.getElapsedTime().asSeconds());
-            int remainingTime = max(0, levelDuration - elapsedSeconds);
-            timerText.setString("Time: " + to_string(remainingTime));
-            window.draw(timerText);
+            //// Update timer
+            //int elapsedSeconds = static_cast<int>(levelClock.getElapsedTime().asSeconds());
+            //int remainingTime = max(0, levelDuration - elapsedSeconds);
+            //timerText.setString("Time: " + to_string(remainingTime));
+            //window.draw(timerText);
 
-            if (remainingTime <= 0) {
+           /* if (remainingTime <= 0) {
                 currentState = GameState::GameOverScreen;
             }
-            break;
+            break;*/
         }
 
         case GameState::PauseScreen:
