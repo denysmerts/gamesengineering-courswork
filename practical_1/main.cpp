@@ -1,13 +1,12 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <iostream>
-#include "Map.h"  
+#include "Map.h"
 #include "Warrior.h"
 #include "Enemy.h"
 
 using namespace std;
 using namespace sf;
-
 
 // Boundary restriction function
 void restrictToWindow(Sprite& sprite, const RenderWindow& window) {
@@ -20,7 +19,6 @@ void restrictToWindow(Sprite& sprite, const RenderWindow& window) {
     );
 }
 
-
 enum class GameState {
     StartScreen,
     DialogueScreen,
@@ -30,7 +28,6 @@ enum class GameState {
 };
 
 int main() {
-
     RenderWindow window(VideoMode(1920, 1080), "Goblin Siege");
     window.setFramerateLimit(60);
 
@@ -73,21 +70,52 @@ int main() {
     // Set the initial game state
     GameState currentState = GameState::StartScreen;
 
+    // Dialogue box setup
+    RectangleShape dialogueBox;
+    dialogueBox.setSize(Vector2f(600, 200));
+    dialogueBox.setPosition(100, 350);
+    dialogueBox.setFillColor(Color(0, 0, 0, 200)); // Semi-transparent black
+    dialogueBox.setOutlineColor(Color::White);
+    dialogueBox.setOutlineThickness(2);
 
-    // Initialize map, warrior, and enemy objects outside the loop
+    Text dialogueText("Village Elder: \nBrave knight, the goblins are attacking! \nYou have been trained for this moment, \nDefend our village and defeat the enemy!", font, 30);
+    dialogueText.setPosition(120, 380);
+    dialogueText.setFillColor(Color::White);
+
+    Text continueText("Press SPACE to continue", font, 20);
+    continueText.setPosition(280, 530);
+    continueText.setFillColor(Color::Yellow);
+
+    // Pause screen elements
+    Text pauseTitle("GAME PAUSED", font, 80);
+    pauseTitle.setPosition(150, 200);
+    pauseTitle.setFillColor(Color::White);
+
+    Text resumeText("Press R to Resume", font, 40);
+    resumeText.setPosition(250, 350);
+    resumeText.setFillColor(Color::Yellow);
+
+    Text quitText("Press Q to Quit", font, 40);
+    quitText.setPosition(250, 420);
+    quitText.setFillColor(Color::Yellow);
+
+    // Game Over screen elements
+    Text gameOverText("Game Over! You have failed us.", font, 50);
+    gameOverText.setPosition(100, 250);
+    gameOverText.setFillColor(Color::Red);
+
+    Text restartText("Press R to Restart", font, 30);
+    restartText.setPosition(250, 350);
+    restartText.setFillColor(Color::Yellow);
+
+    // Initialize map, warrior, and enemy objects
     Map map;
-
-    Warrior warrior;
-    Enemy enemy;
-
-
-    warrior.getSprite().setPosition(200, 200); // Set an initial position for the player
-
-    // Load assets for map and set initial player position
     map.load();
 
+    Warrior warrior;
+    warrior.getSprite().setPosition(200, 200); // Set initial player position
 
-
+    Enemy enemy;
 
     // Timer setup for Level 1
     Clock levelClock;
@@ -96,7 +124,13 @@ int main() {
     timerText.setPosition(650, 10);
     timerText.setFillColor(Color::White);
 
-
+    // Load level 1 background
+    Texture level1Texture;
+    if (!level1Texture.loadFromFile("output/assets/bg.png")) {
+        cerr << "Failed to load level 1 background!" << endl;
+        return -1;
+    }
+    Sprite level1Background(level1Texture);
 
     // Main game loop
     while (window.isOpen()) {
@@ -105,98 +139,98 @@ int main() {
             if (event.type == Event::Closed)
                 window.close();
 
-            // ESC key handling for pausing
-            if (event.type == Event::KeyPressed && event.key.code == Keyboard::Escape) {
-                if (currentState == GameState::GameScreen) {
+            if (event.type == Event::KeyPressed) {
+                if (event.key.code == Keyboard::Escape && currentState == GameState::GameScreen) {
                     currentState = GameState::PauseScreen;
                 }
-                else if (currentState == GameState::PauseScreen) {
+                else if (event.key.code == Keyboard::Escape && currentState == GameState::PauseScreen) {
                     currentState = GameState::GameScreen;
-                    levelClock.restart(); // Restart clock on resume to avoid time drift
+                    levelClock.restart();
                 }
             }
 
-            // Handle pause screen inputs
-            if (currentState == GameState::PauseScreen) {
-                if (event.type == Event::KeyPressed) {
-                    switch (event.key.code) {
-                    case Keyboard::R:  // Resume game
-                        currentState = GameState::GameScreen;
-                        levelClock.restart(); // Restart clock on resume to avoid time drift
-                        break;
-                    case Keyboard::Q:  // Quit game
-                        window.close();
-                        break;
-                    }
-                }
-            }
-
-            // Handle mouse click on the "Start" button if we are on the StartScreen
+            // Handle mouse click on "Start" button
             if (currentState == GameState::StartScreen && event.type == Event::MouseButtonPressed) {
                 Vector2i mousePos = Mouse::getPosition(window);
-                if (startButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                    cout << "Moving to dialogue screen..." << endl;
+                if (startButton.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y))) {
                     currentState = GameState::DialogueScreen;
                 }
             }
 
-            // Handle dialogue screen progression
+            // Dialogue screen progression
             if (currentState == GameState::DialogueScreen &&
                 event.type == Event::KeyPressed &&
                 event.key.code == Keyboard::Space) {
                 currentState = GameState::GameScreen;
-                levelClock.restart(); // Start timer when entering game screen
+                levelClock.restart();
             }
 
-            // Handle restart from game over screen
+            // Handle restart from Game Over screen
             if (currentState == GameState::GameOverScreen &&
                 event.type == Event::KeyPressed &&
                 event.key.code == Keyboard::R) {
-                currentState = GameState::StartScreen; // Restart game from start screen
+                currentState = GameState::StartScreen;
             }
         }
 
-        // Get the mouse position relative to the window
-        Vector2i mousePos = Mouse::getPosition(window);
-
-        // Render the current screen based on the game state
+        // Render
         window.clear();
-
-        if (currentState == GameState::StartScreen) {
+        switch (currentState) {
+        case GameState::StartScreen:
             window.draw(background);
             window.draw(title);
             window.draw(startButton);
-        }
-        else if (currentState == GameState::DialogueScreen) {
+            break;
+
+        case GameState::DialogueScreen:
             window.draw(background);
             window.draw(dialogueBox);
             window.draw(dialogueText);
             window.draw(continueText);
-        }
-        else if (currentState == GameState::GameScreen) {
+            break;
 
-            window.draw(level1Background);
+        case GameState::GameScreen: {
 
-            // Update and render warrior
+            map.render(window);
+           /* window.draw(level1Background);*/
+
+            // Update and render player
             warrior.update();
             restrictToWindow(warrior.getSprite(), window);
             warrior.render(window);
 
-
-            // Update phase
-            warrior.update(); // Update warrior and pass map for boundaries
-            enemy.update();
-
-            map.update();
-
-            // Render phase
-            map.render(window);
+            // Update enemy
+            enemy.moveTowardsPlayer(warrior.getSprite().getPosition());
+            restrictToWindow(enemy.getSprite(), window);
             enemy.render(window);
-            warrior.render(window);
 
+            // Update timer
+            int elapsedSeconds = static_cast<int>(levelClock.getElapsedTime().asSeconds());
+            int remainingTime = max(0, levelDuration - elapsedSeconds);
+            timerText.setString("Time: " + to_string(remainingTime));
+            window.draw(timerText);
+
+            if (remainingTime <= 0) {
+                currentState = GameState::GameOverScreen;
+            }
+            break;
         }
 
-        customCursor.setPosition(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+        case GameState::PauseScreen:
+            window.draw(pauseTitle);
+            window.draw(resumeText);
+            window.draw(quitText);
+            break;
+
+        case GameState::GameOverScreen:
+            window.draw(gameOverText);
+            window.draw(restartText);
+            break;
+        }
+
+        // Custom cursor
+        customCursor.setPosition(static_cast<float>(Mouse::getPosition(window).x),
+            static_cast<float>(Mouse::getPosition(window).y));
         window.draw(customCursor);
 
         window.display();
