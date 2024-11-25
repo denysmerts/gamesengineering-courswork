@@ -6,12 +6,12 @@
 class Warrior : public Character {
 public:
     Warrior();
-    void update() override;          
+    void update() override;
     void animate() override;
-    void handleInput();             
-    void initializeSprite();        
+    void handleInput();
+    void initializeSprite();
     Sprite Warrior::getSprite() const {
-        return sprite; 
+        return sprite;
     }
 
 private:

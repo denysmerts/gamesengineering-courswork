@@ -1,21 +1,12 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <iostream>
-#include "Warrior.h"  
+#include "Map.h"  
+#include "Warrior.h"
 #include "Enemy.h"
+
 using namespace std;
 using namespace sf;
-
-// Boundary restriction function
-void restrictToWindow(Sprite& sprite, const RenderWindow& window) {
-    FloatRect bounds = sprite.getGlobalBounds();
-    Vector2u windowSize = window.getSize();
-
-    sprite.setPosition(
-        std::max(0.f, std::min(sprite.getPosition().x, windowSize.x - bounds.width)),
-        std::max(0.f, std::min(sprite.getPosition().y, windowSize.y - bounds.height))
-    );
-}
 
 enum class GameState {
     StartScreen,
@@ -23,7 +14,8 @@ enum class GameState {
 };
 
 int main() {
-    RenderWindow window(VideoMode(800, 600), "Goblin Siege");
+
+    RenderWindow window(VideoMode(1920, 1080), "Goblin Siege");
     window.setFramerateLimit(60);
 
     // Load the background texture
@@ -65,19 +57,18 @@ int main() {
     // Set the initial game state
     GameState currentState = GameState::StartScreen;
 
-    // Create an instance of Warrior
+    // Initialize map, warrior, and enemy objects outside the loop
+    Map map;
     Warrior warrior;
-
-    // Load level 1 background
-    Texture level1Texture;
-    if (!level1Texture.loadFromFile("output/assets/bg.png")) {
-        cerr << "Failed to load level 1 background!" << endl;
-        return -1;
-    }
-    Sprite level1Background(level1Texture);
-
-    // Create an enemy
     Enemy enemy;
+
+    warrior.getSprite().setPosition(200, 200); // Set an initial position for the player
+
+    // Load assets for map and set initial player position
+    map.load();
+
+    
+
 
     // Main game loop
     while (window.isOpen()) {
@@ -108,28 +99,18 @@ int main() {
             window.draw(startButton);
         }
         else if (currentState == GameState::GameScreen) {
-            window.draw(level1Background);
 
-            // Update the warrior in the game screen
-            warrior.update();
-            // Restrict warrior to window boundaries
-            restrictToWindow(warrior.getSprite(), window);
-            warrior.render(window);
-
-            // Update and render enemy
+            // Update phase
+            warrior.update(); // Update warrior and pass map for boundaries
             enemy.update();
-            enemy.moveTowardsPlayer(warrior.getSprite().getPosition());
-            // Restrict enemy to window boundaries
-            restrictToWindow(enemy.getSprite(), window);
-            enemy.render(window);
+            map.update();
 
-            Text levelTitle("Level 1", font, 50);
-            levelTitle.setPosition(250, 0);
-            levelTitle.setFillColor(Color::White);
-            window.draw(levelTitle);
+            // Render phase
+            map.render(window);
+            enemy.render(window);
+            warrior.render(window);
         }
 
-        // Update and draw the custom cursor
         customCursor.setPosition(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
         window.draw(customCursor);
 

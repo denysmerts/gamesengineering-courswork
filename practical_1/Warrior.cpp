@@ -70,7 +70,7 @@ void Warrior::handleInput() {
 void Warrior::update() {
     handleInput();
     animate();
-    updatePosition();
+    /*updatePosition();*/
 }
 
 void Warrior::animate() {

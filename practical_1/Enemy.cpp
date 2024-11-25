@@ -18,8 +18,8 @@ Enemy::Enemy()
 }
 
 void Enemy::update() {
-    animate();         
-    updatePosition();  
+    animate();
+   /* updatePosition();*/
 }
 
 void Enemy::moveTowardsPlayer(Vector2f playerPosition) {
@@ -39,17 +39,17 @@ void Enemy::moveTowardsPlayer(Vector2f playerPosition) {
 void Enemy::updateFacingDirection(const Vector2f& direction) {
     if (abs(direction.x) > abs(direction.y)) {
         if (direction.x > 0 && isFacingLeft) {
-            sprite.setScale(1, 1);  
+            sprite.setScale(1, 1);
             isFacingLeft = false;
         }
         else if (direction.x < 0 && !isFacingLeft) {
-            sprite.setScale(-1, 1); 
+            sprite.setScale(-1, 1);
             isFacingLeft = true;
         }
     }
     currentRow = (abs(direction.y) > abs(direction.x)) ?
-        (direction.y > 0 ? 3 : 0) :  
-        (direction.x > 0 ? 1 : 2);  
+        (direction.y > 0 ? 3 : 0) :
+        (direction.x > 0 ? 1 : 2);
     spriteRect.top = currentRow * spriteHeight;
 }
 

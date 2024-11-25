@@ -9,10 +9,10 @@ public:
     Character(int frameCount, float frameDuration, int spriteWidth, int spriteHeight);
     virtual ~Character() = default;
 
-    virtual void update();           
-    virtual void render(RenderWindow&);    
-    virtual void animate();      
-    virtual void updatePosition();
+    virtual void update();
+    virtual void render(RenderWindow&);
+    virtual void animate();
+   /* virtual void updatePosition();*/
 
     Texture texture;
     Sprite sprite;

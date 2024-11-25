@@ -21,17 +21,17 @@ void Character::animate() {
 }
 
 void Character::update() {
-    
+
 }
 
-void Character::updatePosition() {
-    Vector2f position = sprite.getPosition();
-    FloatRect bounds = sprite.getGlobalBounds();
-
-    // Ensure the character stays within bounds (example: 800x600 window size)
-    position.x = std::max(0.f, std::min(position.x, 800.f - bounds.width));
-    position.y = std::max(0.f, std::min(position.y, 600.f - bounds.height));
-
-    // Apply the clamped position back to the sprite
-    sprite.setPosition(position);
-}
+//void character::updateposition() {
+//    vector2f position = sprite.getposition();
+//    floatrect bounds = sprite.getglobalbounds();
+//
+//    // ensure the character stays within bounds (example: 800x600 window size)
+//    position.x = std::max(0.f, std::min(position.x, 800.f - bounds.width));
+//    position.y = std::max(0.f, std::min(position.y, 600.f - bounds.height));
+//
+//    // apply the clamped position back to the sprite
+//    sprite.setposition(position);
+//}
