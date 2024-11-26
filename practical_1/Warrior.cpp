@@ -19,38 +19,39 @@ void Warrior::initializeSprite() {
 
 void Warrior::handleInput() {
     isMoving = false;
+    auto position = sprite.getPosition();
 
-    if (Keyboard::isKeyPressed(Keyboard::W)) {
+    if (Keyboard::isKeyPressed(Keyboard::W) && position.y > 0) {
         sprite.move(0, -5.f);
         isMoving = true;
         currentRow = 1;
     }
-    if (Keyboard::isKeyPressed(Keyboard::S)) {
+    if (Keyboard::isKeyPressed(Keyboard::S) && position.y + spriteHeight < 1080) {
         sprite.move(0, 5.f);
         isMoving = true;
         currentRow = 1;
     }
-    if (Keyboard::isKeyPressed(Keyboard::A)) {
+    if (Keyboard::isKeyPressed(Keyboard::A) && position.x > 0) {
         sprite.move(-5.f, 0);
         isMoving = true;
         currentRow = 1;
 
-        // Flip the sprite to face left
+       
         if (!isFacingLeft) {
-            sprite.setScale(-1.f, 1.f); // Flip horizontally
-            sprite.setOrigin(spriteWidth, 0); // Adjust origin to keep alignment
+            sprite.setScale(-1.f, 1.f); 
+            sprite.setOrigin(spriteWidth, 0); 
             isFacingLeft = true;
         }
     }
-    if (Keyboard::isKeyPressed(Keyboard::D)) {
+    if (Keyboard::isKeyPressed(Keyboard::D)  && position.x + spriteWidth < 1920 ){
         sprite.move(5.f, 0);
         isMoving = true;
         currentRow = 1;
 
-        // Flip the sprite to face right
+        
         if (isFacingLeft) {
-            sprite.setScale(1.f, 1.f); // Reset flip
-            sprite.setOrigin(0, 0);   // Reset origin
+            sprite.setScale(1.f, 1.f); 
+            sprite.setOrigin(0, 0);   
             isFacingLeft = false;
         }
     }
@@ -70,7 +71,7 @@ void Warrior::handleInput() {
 void Warrior::update() {
     handleInput();
     animate();
-    /*updatePosition();*/
+   
 }
 
 void Warrior::animate() {

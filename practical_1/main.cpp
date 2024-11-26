@@ -8,30 +8,17 @@
 using namespace std;
 using namespace sf;
 
-// Boundary restriction function
-void restrictToWindow(Sprite& sprite, const RenderWindow& window) {
-    FloatRect bounds = sprite.getGlobalBounds();
-    Vector2u windowSize = window.getSize();
-
-    sprite.setPosition(
-        max(0.f, min(sprite.getPosition().x, windowSize.x - bounds.width)),
-        max(0.f, min(sprite.getPosition().y, windowSize.y - bounds.height))
-    );
-}
 
 enum class GameState {
     StartScreen,
     DialogueScreen,
     GameScreen,
-    PauseScreen,
-    GameOverScreen
 };
 
 int main() {
     RenderWindow window(VideoMode(1920, 1080), "Goblin Siege");
     window.setFramerateLimit(60);
 
-    // Load the background texture
     Texture backgroundTexture;
     if (!backgroundTexture.loadFromFile("output/assets/bg.png")) {
         cerr << "Failed to load background image!" << endl;
@@ -39,7 +26,6 @@ int main() {
     }
     Sprite background(backgroundTexture);
 
-    // Load the font for the text
     Font font;
     if (!font.loadFromFile("output/assets/IrishGrover-Regular.ttf")) {
         cerr << "Failed to load font!" << endl;
@@ -86,68 +72,24 @@ int main() {
     continueText.setPosition(280, 530);
     continueText.setFillColor(Color::Yellow);
 
-    // Pause screen elements
-    Text pauseTitle("GAME PAUSED", font, 80);
-    pauseTitle.setPosition(150, 200);
-    pauseTitle.setFillColor(Color::White);
-
-    Text resumeText("Press R to Resume", font, 40);
-    resumeText.setPosition(250, 350);
-    resumeText.setFillColor(Color::Yellow);
-
-    Text quitText("Press Q to Quit", font, 40);
-    quitText.setPosition(250, 420);
-    quitText.setFillColor(Color::Yellow);
-
-    // Game Over screen elements
-    Text gameOverText("Game Over! You have failed us.", font, 50);
-    gameOverText.setPosition(100, 250);
-    gameOverText.setFillColor(Color::Red);
-
-    Text restartText("Press R to Restart", font, 30);
-    restartText.setPosition(250, 350);
-    restartText.setFillColor(Color::Yellow);
-
-    // Initialize map, warrior, and enemy objects
+   
+ // ------------------------------ INITIALIZING -------------------------// 
+   
     Map map;
-    map.load();
-
     Warrior warrior;
-    warrior.getSprite().setPosition(200, 200); // Set initial player position
-
     Enemy enemy;
 
-    // Timer setup for Level 1
-    //Clock levelClock;
-    //int levelDuration = 60; // Level duration in seconds
-    //Text timerText("", font, 30);
-    //timerText.setPosition(650, 10);
-    //timerText.setFillColor(Color::White);
+ // ------------------------------ INITIALIZING -------------------------// 
+    warrior.getSprite().setPosition(200, 200); // Set initial player position
 
-    // Load level 1 background
-    Texture level1Texture;
-    if (!level1Texture.loadFromFile("output/assets/bg.png")) {
-        cerr << "Failed to load level 1 background!" << endl;
-        return -1;
-    }
-    Sprite level1Background(level1Texture);
-
+    map.load();
+ 
     // Main game loop
     while (window.isOpen()) {
         Event event;
         while (window.pollEvent(event)) {
             if (event.type == Event::Closed)
                 window.close();
-
-            if (event.type == Event::KeyPressed) {
-                if (event.key.code == Keyboard::Escape && currentState == GameState::GameScreen) {
-                    currentState = GameState::PauseScreen;
-                }
-               /* else if (event.key.code == Keyboard::Escape && currentState == GameState::PauseScreen) {
-                    currentState = GameState::GameScreen;
-                    levelClock.restart();
-                }*/
-            }
 
             // Handle mouse click on "Start" button
             if (currentState == GameState::StartScreen && event.type == Event::MouseButtonPressed) {
@@ -163,13 +105,6 @@ int main() {
                 event.key.code == Keyboard::Space) {
                 currentState = GameState::GameScreen;
                 /*levelClock.restart();*/
-            }
-
-            // Handle restart from Game Over screen
-            if (currentState == GameState::GameOverScreen &&
-                event.type == Event::KeyPressed &&
-                event.key.code == Keyboard::R) {
-                currentState = GameState::StartScreen;
             }
         }
 
@@ -191,46 +126,30 @@ int main() {
 
         case GameState::GameScreen: {
 
+        //----------------------------- RENDERING ----------------------------//
+
             map.render(window);
-           /* window.draw(level1Background);*/
-
-            // Update and render player
-            warrior.update();
-            restrictToWindow(warrior.getSprite(), window);
             warrior.render(window);
-
-            // Update enemy
-            enemy.moveTowardsPlayer(warrior.getSprite().getPosition());
-            restrictToWindow(enemy.getSprite(), window);
             enemy.render(window);
 
-            //// Update timer
-            //int elapsedSeconds = static_cast<int>(levelClock.getElapsedTime().asSeconds());
-            //int remainingTime = max(0, levelDuration - elapsedSeconds);
-            //timerText.setString("Time: " + to_string(remainingTime));
-            //window.draw(timerText);
+         //----------------------------- RENDERING ----------------------------//
 
-           /* if (remainingTime <= 0) {
-                currentState = GameState::GameOverScreen;
-            }
-            break;*/
+         //----------------------------- UPDATING ----------------------------//
+
+            warrior.update();
+            enemy.update();
+            map.update();
+
+         //----------------------------- UPDATING ----------------------------//
+
+            enemy.moveTowardsPlayer(warrior.getSprite().getPosition());           
+    
         }
-
-        case GameState::PauseScreen:
-            window.draw(pauseTitle);
-            window.draw(resumeText);
-            window.draw(quitText);
-            break;
-
-        case GameState::GameOverScreen:
-            window.draw(gameOverText);
-            window.draw(restartText);
-            break;
         }
 
         // Custom cursor
-        customCursor.setPosition(static_cast<float>(Mouse::getPosition(window).x),
-            static_cast<float>(Mouse::getPosition(window).y));
+        customCursor.setPosition(static_cast<float>(Mouse::getPosition(window).x), static_cast<float>(Mouse::getPosition(window).y));
+            
         window.draw(customCursor);
 
         window.display();

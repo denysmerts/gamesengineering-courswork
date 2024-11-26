@@ -13,6 +13,8 @@ struct MapObject {
     string texturePath;
     Vector2f position;
 
+   
+
     // Constructor
     MapObject(const std::string& path, const Vector2f& pos)
         : texturePath(path), position(pos) {}
@@ -53,7 +55,6 @@ public:
     int titleHeight;
 
    
-  
 
     const static int MAP_WIDTH = 23; 
     const static int MAP_HEIGHT = 16; 
@@ -159,6 +160,4 @@ public:
      {14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14},
      {14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14}
     };
-
-
 };
