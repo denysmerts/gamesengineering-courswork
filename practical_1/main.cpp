@@ -136,8 +136,8 @@ int main() {
 
          //----------------------------- UPDATING ----------------------------//
 
-            warrior.update();
-            enemy.update();
+            warrior.update(map);
+            enemy.update(map);
             map.update();
 
          //----------------------------- UPDATING ----------------------------//

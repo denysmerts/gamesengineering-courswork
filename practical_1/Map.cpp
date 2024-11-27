@@ -73,6 +73,9 @@ void Map::update() {
 
 void Map::render(RenderWindow& window) {
      /*Render water tiles*/
+
+ 
+
     for (size_t row = 0; row < MAP_HEIGHT; row++) {
         for (size_t col = 0; col < MAP_WIDTH; col++) {
             size_t index = row * MAP_WIDTH + col;
@@ -83,7 +86,9 @@ void Map::render(RenderWindow& window) {
         }
     }
 
-    // Render sand and first elevation tiles
+   
+
+     /*Render sand and first elevation tiles*/
     for (size_t row = 0; row < MAP_HEIGHT; row++) {
         for (size_t col = 0; col < MAP_WIDTH; col++) {
             size_t index = row * MAP_WIDTH + col;
@@ -99,7 +104,7 @@ void Map::render(RenderWindow& window) {
         }
     }
 
-    // Render ground and first elevation tiles
+     /*Render ground and first elevation tiles*/
     for (size_t row = 0; row < MAP_HEIGHT; row++) {
         for (size_t col = 0; col < MAP_WIDTH; col++) {
             size_t index = row * MAP_WIDTH + col;
@@ -125,7 +130,7 @@ void Map::render(RenderWindow& window) {
         }
     }
 
-    // Render second elevation tiles
+     /*Render second elevation tiles*/
     for (size_t row = 0; row < MAP_HEIGHT; row++) {
         for (size_t col = 0; col < MAP_WIDTH; col++) {
             int secondElevationID = secondElevationData[row][col];
@@ -139,7 +144,7 @@ void Map::render(RenderWindow& window) {
         }
     }
 
-    // Render second ground tiles (at the end)
+     /*Render second ground tiles (at the end)*/
     for (size_t row = 0; row < MAP_HEIGHT; row++) {
         for (size_t col = 0; col < MAP_WIDTH; col++) {
             int secondGroundTileID = secondGroundData[row][col];
@@ -157,8 +162,35 @@ void Map::render(RenderWindow& window) {
         }
     }
 
+    RectangleShape debugTile(Vector2f(titleWidth, titleHeight));
+    debugTile.setFillColor(Color(255, 0, 0, 128)); // Semi-transparent red
+    for (size_t row = 0; row < MAP_HEIGHT; row++) {
+        for (size_t col = 0; col < MAP_WIDTH; col++) {
+            if (wallData[row][col] == 14) { // Check if water tile
+                debugTile.setPosition(Vector2f(100 + col * titleWidth, 100 + row * titleHeight));
+                window.draw(debugTile); // Draw debug overlay
+            }
+        }
+    }
+
     // Render objects
     for (const auto& obj : mapObjects) {
         window.draw(obj.sprite);
     }
+
+
+}
+
+bool Map::isWaterTile(float x, float y) const {
+    // Convert world coordinates to tile coordinates
+    int col = static_cast<int>((x-100) / titleWidth);
+    int row = static_cast<int>((y-100) / titleHeight);
+
+    // Check bounds
+    if (row < 0 || row >= MAP_HEIGHT || col < 0 || col >= MAP_WIDTH) {
+        return false;
+    }
+
+    // Check if the tile is water (tile ID 14)
+    return wallData[row][col] == 14;
 }

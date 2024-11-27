@@ -20,7 +20,7 @@ void Character::animate() {
     }
 }
 
-void Character::update() {
+void Character::update(const Map& map) {
 
 }
 

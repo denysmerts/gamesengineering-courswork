@@ -2,22 +2,40 @@
 #define WARRIOR_H
 
 #include "Character.h"
+#include "Map.h"
 
 class Warrior : public Character {
 public:
+    // Constructor
     Warrior();
-    void update() override;
+
+    // Update function that incorporates collision detection with the map
+    void update(const Map& map) override;
+
+    // Animates the warrior
     void animate() override;
-    void handleInput();
+
+    // Handles player input and movement
+    void handleInput(const Map& map);
+
+    // Initializes the warrior sprite
     void initializeSprite();
-    Sprite Warrior::getSprite() const {
-        return sprite;
-    }
+
+    // Retrieves the warrior sprite for rendering
+    Sprite getSprite() const { return sprite; }
+
+    // Returns the hitbox of the warrior
+    FloatRect getHitbox() const;
+    void updateHitboxPosition();
 
 private:
+    // Movement and state flags
     bool isMoving;
     bool isFighting;
     bool isFacingLeft;
+
+    // Logical hitbox for collision detection
+    FloatRect hitbox;
 };
 
 #endif

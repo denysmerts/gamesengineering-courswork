@@ -9,7 +9,7 @@ using namespace sf;
 class Enemy : public Character {
 public:
     Enemy();
-    void update() override;                      
+    void update(const Map& map) override;
     Sprite getSprite() const;
     void moveTowardsPlayer(sf::Vector2f playerPosition);
     void updateFacingDirection(const sf::Vector2f& direction);

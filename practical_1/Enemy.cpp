@@ -17,7 +17,7 @@ Enemy::Enemy()
     sprite.setPosition(600, 300);
 }
 
-void Enemy::update() {
+void Enemy::update(const Map& map) {
     animate();
    /* updatePosition();*/
 }

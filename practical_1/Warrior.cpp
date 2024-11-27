@@ -15,63 +15,91 @@ void Warrior::initializeSprite() {
     sprite.setTexture(texture);
     spriteRect = IntRect(0, 0, spriteWidth, spriteHeight);
     sprite.setTextureRect(spriteRect);
+    sprite.setPosition(200, 200);
+
+    // Initialize hitbox (64x64)
+    hitbox.width = 64;
+    hitbox.height = 64;
+    updateHitboxPosition(); // Sync hitbox with initial sprite position
 }
 
-void Warrior::handleInput() {
-    isMoving = false;
-    auto position = sprite.getPosition();
+void Warrior::update(const Map& map) {
+    handleInput(map);
+    animate();
+    updateHitboxPosition(); // Sync hitbox with sprite position
+}
 
+void Warrior::handleInput(const Map& map) {
+    isMoving = false; // Reset movement state
+    auto position = sprite.getPosition();
+    Vector2f nextPosition = position;
+
+    // Handle movement keys
     if (Keyboard::isKeyPressed(Keyboard::W) && position.y > 0) {
-        sprite.move(0, -5.f);
+        nextPosition.y -= 5.f;
         isMoving = true;
-        currentRow = 1;
     }
     if (Keyboard::isKeyPressed(Keyboard::S) && position.y + spriteHeight < 1080) {
-        sprite.move(0, 5.f);
+        nextPosition.y += 5.f;
         isMoving = true;
-        currentRow = 1;
     }
     if (Keyboard::isKeyPressed(Keyboard::A) && position.x > 0) {
-        sprite.move(-5.f, 0);
+        nextPosition.x -= 5.f;
         isMoving = true;
-        currentRow = 1;
 
-       
         if (!isFacingLeft) {
-            sprite.setScale(-1.f, 1.f); 
-            sprite.setOrigin(spriteWidth, 0); 
+            sprite.setScale(-1.f, 1.f); // Flip sprite horizontally
+            sprite.setOrigin(spriteWidth, 0);
             isFacingLeft = true;
         }
     }
-    if (Keyboard::isKeyPressed(Keyboard::D)  && position.x + spriteWidth < 1920 ){
-        sprite.move(5.f, 0);
+    if (Keyboard::isKeyPressed(Keyboard::D) && position.x + spriteWidth < 1920) {
+        nextPosition.x += 5.f;
         isMoving = true;
-        currentRow = 1;
 
-        
         if (isFacingLeft) {
-            sprite.setScale(1.f, 1.f); 
-            sprite.setOrigin(0, 0);   
+            sprite.setScale(1.f, 1.f); // Reset sprite flip
+            sprite.setOrigin(0, 0);
             isFacingLeft = false;
         }
     }
 
+    // Check collision using the hitbox
+    hitbox.left = nextPosition.x + 64; // Offset to align hitbox within sprite
+    hitbox.top = nextPosition.y + 64;
+
+    if (!map.isWaterTile(hitbox.left, hitbox.top)) {
+        sprite.setPosition(nextPosition); // Update position only if valid
+    }
+    else {
+        isMoving = false; // Block movement if water tile
+    }
+
+    // Handle fighting input
     if (Keyboard::isKeyPressed(Keyboard::F) && !isFighting) {
         isFighting = true;
-        currentRow = 2;
-        currentFrame = 0;
+        currentRow = 2;      // Fighting animation row
+        currentFrame = 0;    // Start fighting animation from the beginning
         animationClock.restart();
     }
 
-    if (!isMoving && !isFighting) {
-        currentRow = 0;
+    // Determine animation row for movement or idle
+    if (isMoving) {
+        currentRow = 1;  // Running animation row
+    }
+    else if (!isFighting) {
+        currentRow = 0;  // Idle animation row
     }
 }
 
-void Warrior::update() {
-    handleInput();
-    animate();
-   
+void Warrior::updateHitboxPosition() {
+    // Align the hitbox with the center of the sprite (192x192 -> 64x64)
+    hitbox.left = sprite.getPosition().x + 64; // Offset X
+    hitbox.top = sprite.getPosition().y + 64;  // Offset Y
+}
+
+sf::FloatRect Warrior::getHitbox() const {
+    return hitbox; // Return the logical hitbox
 }
 
 void Warrior::animate() {

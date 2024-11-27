@@ -4,12 +4,14 @@
 #include <SFML/Graphics.hpp>
 using namespace sf;
 
+class Map;
+
 class Character {
 public:
     Character(int frameCount, float frameDuration, int spriteWidth, int spriteHeight);
     virtual ~Character() = default;
 
-    virtual void update();
+    virtual void update(const Map& map);
     virtual void render(RenderWindow&);
     virtual void animate();
    /* virtual void updatePosition();*/
