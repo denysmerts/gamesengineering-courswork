@@ -4,7 +4,7 @@
 #include "Map.h"
 #include "Warrior.h"
 #include "Enemy.h"
-#include "CollisionManager.h" // Make sure this is included
+#include "CollisionManager.h"
 
 using namespace std;
 using namespace sf;
@@ -113,23 +113,23 @@ int main() {
         case GameState::GameScreen: {
             map.render(window);
             warrior.render(window);
-            enemy.render(window);
 
-            window.draw(enemy.getHealthBar()); // Draw enemy's health bar
+            if (enemy.isActive()) { // Render and update only if enemy is active
+                enemy.render(window);
+                window.draw(enemy.getHealthBar());
+                enemy.moveTowardsPlayer(warrior.getSprite().getPosition());
+            }
 
-            warrior.update(enemy, map); // Update warrior with enemy reference
-            enemy.update(map);          // Update enemy with map reference
-
-            enemy.moveTowardsPlayer(warrior.getSprite().getPosition());
+            warrior.update(enemy, map);
+            enemy.update(map);
 
             // Check collision between the warrior and the goblin
             if (CollisionManager::checkCollision(warrior, enemy)) {
                 std::cout << "Collision detected! Warrior and Goblin are interacting." << std::endl;
             }
 
-            if (enemy.isDefeated()) {
-                std::cout << "The Enemy has been defeated!" << std::endl;
-                enemy.reset(); // Reset the enemy
+            if (enemy.isDefeated() && enemy.isActive()) {
+                std::cout << "Enemy defeated!" << std::endl;
             }
         }
                                   break;
