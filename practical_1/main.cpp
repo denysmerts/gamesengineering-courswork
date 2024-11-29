@@ -112,6 +112,9 @@ int main() {
 
         case GameState::GameScreen: {
             map.render(window);
+            if (!enemy.isActive()) {
+                enemy.drawDefeatSprite(window);
+            }
             warrior.render(window);
 
             if (enemy.isActive()) { // Render and update only if enemy is active
@@ -119,6 +122,7 @@ int main() {
                 window.draw(enemy.getHealthBar());
                 enemy.moveTowardsPlayer(warrior.getSprite().getPosition());
             }
+            
 
             warrior.update(enemy, map);
             enemy.update(map);
@@ -132,7 +136,7 @@ int main() {
                 std::cout << "Enemy defeated!" << std::endl;
             }
         }
-                                  break;
+         break;
         }
 
         customCursor.setPosition(static_cast<float>(Mouse::getPosition(window).x), static_cast<float>(Mouse::getPosition(window).y));
