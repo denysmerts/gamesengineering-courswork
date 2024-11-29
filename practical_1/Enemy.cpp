@@ -10,7 +10,10 @@ Enemy::Enemy()
     isFacingLeft(false),
     active(true),
     defeatAnimationStarted(false),
-    defeatFrameCount(0) {
+    defeatFrameCount(0),
+    healthBarOffsetX(64.f),
+    healthBarOffsetY(40.f) {
+
     if (!texture.loadFromFile("output/assets/goblin1.png")) {
         cerr << "Error loading enemy texture!" << endl;
     }
@@ -19,20 +22,21 @@ Enemy::Enemy()
     sprite.setTextureRect(spriteRect);
     sprite.setPosition(600, 300);
 
-    // Load defeat texture
+    
     if (!defeatTexture.loadFromFile("output/assets/dead.png")) {
         cerr << "Error loading enemy defeat texture!" << endl;
     }
     defeatSprite.setTexture(defeatTexture);
 
     // Initialize health bar
-    healthBar.setSize(sf::Vector2f(50.f, 5.f));
-    healthBar.setFillColor(sf::Color::Green);
-    healthBar.setPosition(sprite.getPosition().x, sprite.getPosition().y - 0.5f);
+    healthBar.setSize(Vector2f(50.f, 5.f));
+    healthBar.setFillColor(Color::Green);
+    healthBar.setPosition(sprite.getPosition().x + healthBarOffsetX, sprite.getPosition().y);
 
 }
 
 void Enemy::update(const Map& map) {
+
     if (!active) return;
 
     if (health <= 0) {
@@ -52,9 +56,13 @@ void Enemy::update(const Map& map) {
 
     animate();
 
-    // Update health bar size and position
-    healthBar.setSize(sf::Vector2f(50.f * (static_cast<float>(health) / 50.f), 5.f));
-    healthBar.setPosition(sprite.getPosition().x, sprite.getPosition().y - 0.5f);
+    // Update health bar size based on health
+    healthBar.setSize(Vector2f(50.f * (static_cast<float>(health) / 50.f), 5.f));
+
+    
+    // Update health bar position dynamically to follow the sprite
+    Vector2f spritePos = sprite.getPosition();
+    healthBar.setPosition(spritePos.x + healthBarOffsetX, spritePos.y + healthBarOffsetY); 
 
 }
 
@@ -67,7 +75,7 @@ void Enemy::reset() {
     sprite.setPosition(600, 300);
 }
 
-bool Enemy::checkCollision(const sf::Sprite& warrior) {
+bool Enemy::checkCollision(const Sprite& warrior) {
     return sprite.getGlobalBounds().intersects(warrior.getGlobalBounds());
 }
 
@@ -113,7 +121,7 @@ Sprite Enemy::getSprite() const {
     return sprite;
 }
 
-sf::RectangleShape Enemy::getHealthBar() const {
+RectangleShape Enemy::getHealthBar() const {
     return healthBar;
 }
 
@@ -121,7 +129,7 @@ bool Enemy::isActive() const {
     return active;
 }
 
-void Enemy::drawDefeatSprite(sf::RenderWindow& window) {
+void Enemy::drawDefeatSprite(RenderWindow& window) {
     if (defeatAnimationStarted && !active) {
         window.draw(defeatSprite);
     }

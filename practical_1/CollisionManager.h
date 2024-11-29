@@ -9,4 +9,4 @@ public:
     static bool checkCollision(const Warrior& warrior, const Enemy& enemy);
 };
 
-#endif // COLLISIONMANAGER_H
+#endif 
