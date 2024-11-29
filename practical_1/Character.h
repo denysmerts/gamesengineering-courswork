@@ -2,24 +2,28 @@
 #define CHARACTER_H
 
 #include <SFML/Graphics.hpp>
-using namespace sf;
 
 class Map;
 
 class Character {
 public:
-    Character(int frameCount, float frameDuration, int spriteWidth, int spriteHeight);
+    Character(int frameCount, float frameDuration, int spriteWidth, int spriteHeight, int hp, float speed);
     virtual ~Character() = default;
 
-    virtual void update(const Map& map);
-    virtual void render(RenderWindow&);
+    virtual void update(const Map& map); // Ensure this is virtual
+    virtual void render(sf::RenderWindow& window);
     virtual void animate();
-   /* virtual void updatePosition();*/
 
-    Texture texture;
-    Sprite sprite;
-    IntRect spriteRect;
-    Clock animationClock;
+    int getHealth() const;
+    void setHealth(int hp);
+    sf::Sprite getSprite() const;
+    void takeDamage(int damage);
+
+protected:
+    sf::Texture texture;
+    sf::Sprite sprite;
+    sf::IntRect spriteRect;
+    sf::Clock animationClock;
 
     int frameCount;
     int currentFrame;
@@ -28,6 +32,8 @@ public:
 
     int spriteWidth;
     int spriteHeight;
+    int health;
+    float movementSpeed;
 };
 
-#endif
+#endif // CHARACTER_H
