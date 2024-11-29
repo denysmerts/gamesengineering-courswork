@@ -1,10 +1,13 @@
 #include "Character.h"
+#include "Map.h"
 
-Character::Character(int frameCount, float frameDuration, int spriteWidth, int spriteHeight)
+Character::Character(int frameCount, float frameDuration, int spriteWidth, int spriteHeight, int hp, float speed)
     : frameCount(frameCount), frameDuration(frameDuration), spriteWidth(spriteWidth),
-    spriteHeight(spriteHeight), currentFrame(0), currentRow(0) {}
+    spriteHeight(spriteHeight), currentFrame(0), currentRow(0), health(hp), movementSpeed(speed) {
+    // Initialize other members here if needed
+}
 
-void Character::render(RenderWindow& window) {
+void Character::render(sf::RenderWindow& window) {
     window.draw(sprite);
 }
 
@@ -20,18 +23,23 @@ void Character::animate() {
     }
 }
 
-void Character::update() {
-
+void Character::update(const Map& map) {
+    // Implementation here
 }
 
-//void character::updateposition() {
-//    vector2f position = sprite.getposition();
-//    floatrect bounds = sprite.getglobalbounds();
-//
-//    // ensure the character stays within bounds (example: 800x600 window size)
-//    position.x = std::max(0.f, std::min(position.x, 800.f - bounds.width));
-//    position.y = std::max(0.f, std::min(position.y, 600.f - bounds.height));
-//
-//    // apply the clamped position back to the sprite
-//    sprite.setposition(position);
-//}
+int Character::getHealth() const {
+    return health;
+}
+
+void Character::setHealth(int hp) {
+    health = hp;
+}
+
+sf::Sprite Character::getSprite() const {
+    return sprite;
+}
+
+void Character::takeDamage(int damage) {
+    health -= damage;
+    if (health < 0) health = 0; // Prevent negative health
+}

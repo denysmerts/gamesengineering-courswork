@@ -1,5 +1,6 @@
 #include "Map.h"
 #include <iostream>
+using namespace sf;
 
 using namespace std;
 
@@ -20,17 +21,17 @@ void Map::load() {
 
     if (!elevationTexture.loadFromFile("output/assets/Elevation.png")) {
     cerr << "Error loading elevation texture!" << endl;
-}
+    }
 
- /*   mapObjects.push_back({ "output/assets/Castle.png", Vector2f(250, 23) });
-    mapObjects.push_back({ "output/assets/Tower.png", Vector2f(160, 410) });
-    mapObjects.push_back({ "output/assets/Tower.png", Vector2f(670, 650) });
-    mapObjects.push_back({ "output/assets/House.png", Vector2f(550, 0) });
-    mapObjects.push_back({ "output/assets/House.png", Vector2f(770, 50) });
-    mapObjects.push_back({ "output/assets/House.png", Vector2f(900, 10) });
-    mapObjects.push_back({ "output/assets/House.png", Vector2f(900, 200) });
-    mapObjects.push_back({ "output/assets/GoldMine.png", Vector2f(1000, 400) });
-  */
+    mapObjects.push_back({ "output/assets/Castle.png", Vector2f(260, 100) });
+    mapObjects.push_back({ "output/assets/Tower.png", Vector2f(225, 480) });
+    mapObjects.push_back({ "output/assets/Tower.png", Vector2f(735, 725) });
+    mapObjects.push_back({ "output/assets/House.png", Vector2f(940, 130) });
+    mapObjects.push_back({ "output/assets/House.png", Vector2f(680, 90) });
+    mapObjects.push_back({ "output/assets/House.png", Vector2f(1060, 100) });
+    mapObjects.push_back({ "output/assets/House.png", Vector2f(1060, 300) });
+    mapObjects.push_back({ "output/assets/GoldMine.png", Vector2f(1250, 250) });
+  
     for (auto& obj : mapObjects) {
         if (!obj.texture.loadFromFile(obj.texturePath)) {
             cerr << "Error loading texture: " << obj.texturePath << endl;
@@ -71,7 +72,10 @@ void Map::update() {
 }
 
 void Map::render(RenderWindow& window) {
-    // Step 1: Render water tiles across the entire map
+     /*Render water tiles*/
+
+ 
+
     for (size_t row = 0; row < MAP_HEIGHT; row++) {
         for (size_t col = 0; col < MAP_WIDTH; col++) {
             size_t index = row * MAP_WIDTH + col;
@@ -82,15 +86,31 @@ void Map::render(RenderWindow& window) {
         }
     }
 
-    // Step 2: Render elevation and ground tiles
+   
+
+     /*Render sand and first elevation tiles*/
+    for (size_t row = 0; row < MAP_HEIGHT; row++) {
+        for (size_t col = 0; col < MAP_WIDTH; col++) {
+            size_t index = row * MAP_WIDTH + col;
+            int tileID = sandData[row][col];
+
+            // Render sand tiles
+            sprites[index].setTexture(texture);
+            sprites[index].setTextureRect(IntRect((tileID % 10) * titleWidth, (tileID / 10) * titleHeight, titleWidth, titleHeight));
+            sprites[index].setPosition(Vector2f(100 + col * titleWidth, 100 + row * titleHeight));
+            window.draw(sprites[index]);
+
+
+        }
+    }
+
+     /*Render ground and first elevation tiles*/
     for (size_t row = 0; row < MAP_HEIGHT; row++) {
         for (size_t col = 0; col < MAP_WIDTH; col++) {
             size_t index = row * MAP_WIDTH + col;
             int tileID = mapData[row][col];
 
-
-
-            // Elevation tiles
+            // Render first elevation tiles
             int elevationID = elevationData[row][col];
             if (elevationID > 0) {
                 Sprite elevationSprite;
@@ -100,17 +120,77 @@ void Map::render(RenderWindow& window) {
                 window.draw(elevationSprite);
             }
 
-            // Ground tiles
+            // Render ground tiles
             sprites[index].setTexture(texture);
             sprites[index].setTextureRect(IntRect((tileID % 10) * titleWidth, (tileID / 10) * titleHeight, titleWidth, titleHeight));
             sprites[index].setPosition(Vector2f(100 + col * titleWidth, 100 + row * titleHeight));
             window.draw(sprites[index]);
 
+         
         }
     }
 
-    // Step 3: Render objects on top
+     /*Render second elevation tiles*/
+    for (size_t row = 0; row < MAP_HEIGHT; row++) {
+        for (size_t col = 0; col < MAP_WIDTH; col++) {
+            int secondElevationID = secondElevationData[row][col];
+            if (secondElevationID > 0) {
+                Sprite secondElevationSprite;
+                secondElevationSprite.setTexture(elevationTexture); // Use appropriate texture
+                secondElevationSprite.setTextureRect(IntRect((secondElevationID % 10) * titleWidth, (secondElevationID / 10) * titleHeight, titleWidth, titleHeight));
+                secondElevationSprite.setPosition(Vector2f(100 + col * titleWidth, 100 + row * titleHeight));
+                window.draw(secondElevationSprite);
+            }
+        }
+    }
+
+     /*Render second ground tiles (at the end)*/
+    for (size_t row = 0; row < MAP_HEIGHT; row++) {
+        for (size_t col = 0; col < MAP_WIDTH; col++) {
+            int secondGroundTileID = secondGroundData[row][col];
+            if (secondGroundTileID >= 0) { // Only render non-empty tiles
+                Sprite secondGroundSprite;
+                secondGroundSprite.setTexture(texture); // Use the same ground texture
+                secondGroundSprite.setTextureRect(IntRect(
+                    (secondGroundTileID % 10) * titleWidth,
+                    (secondGroundTileID / 10) * titleHeight,
+                    titleWidth, titleHeight
+                ));
+                secondGroundSprite.setPosition(Vector2f(100 + col * titleWidth, 100 + row * titleHeight));
+                window.draw(secondGroundSprite);
+            }
+        }
+    }
+
+    RectangleShape debugTile(Vector2f(titleWidth, titleHeight));
+    debugTile.setFillColor(Color(255, 0, 0, 128)); // Semi-transparent red
+    for (size_t row = 0; row < MAP_HEIGHT; row++) {
+        for (size_t col = 0; col < MAP_WIDTH; col++) {
+            if (wallData[row][col] == 14) { // Check if water tile
+                debugTile.setPosition(Vector2f(100 + col * titleWidth, 100 + row * titleHeight));
+                window.draw(debugTile); // Draw debug overlay
+            }
+        }
+    }
+
+    // Render objects
     for (const auto& obj : mapObjects) {
         window.draw(obj.sprite);
     }
+
+
+}
+
+bool Map::isWaterTile(float x, float y) const {
+    // Convert world coordinates to tile coordinates
+    int col = static_cast<int>((x-100) / titleWidth);
+    int row = static_cast<int>((y-100) / titleHeight);
+
+    // Check bounds
+    if (row < 0 || row >= MAP_HEIGHT || col < 0 || col >= MAP_WIDTH) {
+        return false;
+    }
+
+    // Check if the tile is water (tile ID 14)
+    return wallData[row][col] == 14;
 }
