@@ -1,6 +1,7 @@
 #ifndef WARRIOR_H
 #define WARRIOR_H
 
+#include <SFML/Audio.hpp>
 #include "Character.h"
 #include "Map.h"
 #include "Enemy.h"
@@ -31,6 +32,9 @@ private:
 
     FloatRect hitbox;
     Clock attackClock;
+
+    SoundBuffer swordSoundBuffer; 
+    Sound swordSound;             
 };
 
 #endif

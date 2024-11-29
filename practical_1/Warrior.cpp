@@ -1,5 +1,6 @@
 #include "Warrior.h"
 #include <iostream>
+#include <SFML/Audio.hpp>
 
 using namespace sf;
 using namespace std;
@@ -9,6 +10,11 @@ Warrior::Warrior()
     isMoving(false), isFighting(false), isFacingLeft(false),
     isAttacking(false), attackCooldown(1.0f) {
     initializeSprite();
+
+    if (!swordSoundBuffer.loadFromFile("output/assets/sword-sound.wav")) {
+        cerr << "Error loading sword sound!" << endl;
+    }
+    swordSound.setBuffer(swordSoundBuffer);
 }
 
 void Warrior::initializeSprite() {
@@ -89,6 +95,9 @@ void Warrior::handleInput(const Map& map) {
             currentFrame = 0;
             animationClock.restart();
             attackClock.restart();
+
+
+            swordSound.play();
         }
     }
 
