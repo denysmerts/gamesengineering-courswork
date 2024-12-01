@@ -21,7 +21,7 @@ int main() {
 
     // Load background texture
     Texture backgroundTexture;
-    if (!backgroundTexture.loadFromFile("output/assets/background-image.png")) {
+    if (!backgroundTexture.loadFromFile("output/assets/background.png")) {
         cerr << "Failed to load background image!" << endl;
         return -1;
     }
@@ -41,29 +41,17 @@ int main() {
         return -1;
     }
 
-    // Game title
-    Text title("Goblin Siege", font, 100);
-    title.setPosition(620, 50);
-    title.setFillColor(Color::White);
-
-    // Start button setup
-    Texture buttonTexture;
-    if (!buttonTexture.loadFromFile("output/assets/button.png")) {
-        cerr << "Failed to load button image!" << endl;
-        return -1;
-    }
-    Sprite startButton(buttonTexture);
-    startButton.setPosition(720, 400);
-    startButton.setScale(2.0f, 2.0f);
-
-    Text startButtonText("Start Game", font, 40);
-    FloatRect buttonBounds = startButton.getGlobalBounds();
-    FloatRect textBounds = startButtonText.getLocalBounds();
-    startButtonText.setPosition(
-        buttonBounds.left + (buttonBounds.width - textBounds.width) / 2 - 15,
-        buttonBounds.top + (buttonBounds.height - textBounds.height) / 2 - 30
+  
+    // Instruction text
+    Text pressKeyText("Press any key to start", font, 50);
+    // Dynamically position the text at the middle bottom of the screen
+    FloatRect textBounds = pressKeyText.getLocalBounds();
+    pressKeyText.setPosition(
+        (window.getSize().x - textBounds.width) / 2,  // Center horizontally
+        window.getSize().y - textBounds.height - 40  // Position slightly above the bottom
     );
-    startButtonText.setFillColor(Color::White);
+    pressKeyText.setFillColor(Color::White);
+
 
     // Pause screen elements
     Text pauseTitle("Game Paused", font, 80);
@@ -101,13 +89,12 @@ int main() {
             if (event.type == Event::Closed)
                 window.close();
 
-            if (currentState == GameState::StartScreen && event.type == Event::MouseButtonPressed) {
-                Vector2i mousePos = Mouse::getPosition(window);
-                if (startButton.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y))) {
-                    currentState = GameState::GameScreen;
-                }
+            // Handle "Press any key to start" in StartScreen
+            if (currentState == GameState::StartScreen && event.type == Event::KeyPressed) {
+                currentState = GameState::GameScreen;
             }
 
+            // Pause and resume logic
             if (currentState == GameState::GameScreen && event.type == Event::KeyPressed) {
                 if (event.key.code == Keyboard::Escape) {
                     currentState = GameState::PauseScreen;
@@ -131,9 +118,7 @@ int main() {
         switch (currentState) {
         case GameState::StartScreen:
             window.draw(background);
-            window.draw(startButton);
-            window.draw(startButtonText);
-            window.draw(title);
+            window.draw(pressKeyText); // Display "Press any key to start"
             break;
 
         case GameState::GameScreen:
