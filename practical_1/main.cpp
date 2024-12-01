@@ -11,8 +11,8 @@ using namespace sf;
 
 enum class GameState {
     StartScreen,
-    DialogueScreen,
     GameScreen,
+    PauseScreen,
 };
 
 int main() {
@@ -46,63 +46,53 @@ int main() {
     title.setPosition(620, 50);
     title.setFillColor(Color::White);
 
-    // Load button texture
+    // Start button setup
     Texture buttonTexture;
     if (!buttonTexture.loadFromFile("output/assets/button.png")) {
         cerr << "Failed to load button image!" << endl;
         return -1;
     }
-    Sprite buttonSprite(buttonTexture);
-    buttonSprite.setPosition(720, 400); // Adjust position as needed
-    buttonSprite.setScale(2.0f, 2.0f); // Scale button
+    Sprite startButton(buttonTexture);
+    startButton.setPosition(720, 400);
+    startButton.setScale(2.0f, 2.0f);
 
-    // Button text
     Text startButtonText("Start Game", font, 40);
-    FloatRect buttonBounds = buttonSprite.getGlobalBounds();
+    FloatRect buttonBounds = startButton.getGlobalBounds();
     FloatRect textBounds = startButtonText.getLocalBounds();
     startButtonText.setPosition(
-        buttonBounds.left + (buttonBounds.width - textBounds.width) / 2 - 15 ,
+        buttonBounds.left + (buttonBounds.width - textBounds.width) / 2 - 15,
         buttonBounds.top + (buttonBounds.height - textBounds.height) / 2 - 30
     );
     startButtonText.setFillColor(Color::White);
-    startButtonText.setScale(1.2f, 1.2f);
 
-    // Load custom cursor
-    Texture cursorTexture;
-    if (!cursorTexture.loadFromFile("output/assets/cursor.png")) {
-        cerr << "Failed to load custom cursor!" << endl;
-        return -1;
-    }
-    Sprite customCursor(cursorTexture);
-    window.setMouseCursorVisible(false);
+    // Pause screen elements
+    Text pauseTitle("Game Paused", font, 80);
+    pauseTitle.setPosition(650, 200);
+    pauseTitle.setFillColor(Color::White);
 
-    // Game state management
-    GameState currentState = GameState::StartScreen;
+    Text resumeText("Press R to Resume", font, 40);
+    resumeText.setPosition(750, 400);
+    resumeText.setFillColor(Color::Yellow);
 
-    // Dialogue box
-    RectangleShape dialogueBox;
-    dialogueBox.setSize(Vector2f(600, 200));
-    dialogueBox.setPosition(100, 350);
-    dialogueBox.setFillColor(Color(0, 0, 0, 200));
-    dialogueBox.setOutlineColor(Color::White);
-    dialogueBox.setOutlineThickness(2);
+    Text quitText("Press Q to Quit", font, 40);
+    quitText.setPosition(750, 500);
+    quitText.setFillColor(Color::Yellow);
 
-    Text dialogueText("Village Elder: \nBrave knight, the goblins are attacking! \nYou have been trained for this moment, \nDefend our village and defeat the enemy!", font, 30);
-    dialogueText.setPosition(120, 380);
-    dialogueText.setFillColor(Color::White);
-
-    Text continueText("Press SPACE to continue", font, 20);
-    continueText.setPosition(280, 530);
-    continueText.setFillColor(Color::Yellow);
+    // Semi-transparent background for pause screen
+    RectangleShape pauseOverlay(Vector2f(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)));
+    pauseOverlay.setFillColor(Color(0, 0, 0, 150)); // Black with 150 alpha for transparency
 
     // Initialize map, warrior, and enemy
     Map map;
     Warrior warrior;
     Enemy enemy;
 
-    warrior.getSprite().setPosition(200, 200); // Set initial player position
+    warrior.getSprite().setPosition(200, 200);
 
     map.load();
+
+    // Game state management
+    GameState currentState = GameState::StartScreen;
 
     // Main game loop
     while (window.isOpen()) {
@@ -113,66 +103,69 @@ int main() {
 
             if (currentState == GameState::StartScreen && event.type == Event::MouseButtonPressed) {
                 Vector2i mousePos = Mouse::getPosition(window);
-                if (buttonSprite.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y))) {
-                    currentState = GameState::DialogueScreen;
+                if (startButton.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y))) {
+                    currentState = GameState::GameScreen;
                 }
             }
 
-            if (currentState == GameState::DialogueScreen &&
-                event.type == Event::KeyPressed &&
-                event.key.code == Keyboard::Space) {
-                currentState = GameState::GameScreen;
+            if (currentState == GameState::GameScreen && event.type == Event::KeyPressed) {
+                if (event.key.code == Keyboard::Escape) {
+                    currentState = GameState::PauseScreen;
+                }
+            }
+
+            if (currentState == GameState::PauseScreen && event.type == Event::KeyPressed) {
+                if (event.key.code == Keyboard::R) {
+                    currentState = GameState::GameScreen; // Resume game
+                }
+                else if (event.key.code == Keyboard::Q) {
+                    currentState = GameState::StartScreen; // Quit to start screen
+                }
             }
         }
 
         // Clear the window
         window.clear();
+
+        // State-specific rendering
         switch (currentState) {
         case GameState::StartScreen:
             window.draw(background);
-            window.draw(buttonSprite);    // Draw button sprite
-            window.draw(startButtonText); // Draw button text
+            window.draw(startButton);
+            window.draw(startButtonText);
             window.draw(title);
             break;
 
-        case GameState::DialogueScreen:
-            window.draw(background);
-            window.draw(dialogueBox);
-            window.draw(dialogueText);
-            window.draw(continueText);
-            break;
-
-        case GameState::GameScreen: {
+        case GameState::GameScreen:
             map.render(window);
-            if (!enemy.isActive()) {
-                enemy.drawDefeatSprite(window);
-            }
             warrior.render(window);
-
-            if (enemy.isActive()) { // Render and update only if enemy is active
+            if (enemy.isActive()) {
                 enemy.render(window);
                 window.draw(enemy.getHealthBar());
                 enemy.moveTowardsPlayer(warrior.getSprite().getPosition());
             }
-
             warrior.update(enemy, map);
             enemy.update(map);
 
-            // Check collision between the warrior and the goblin
             if (CollisionManager::checkCollision(warrior, enemy)) {
-                std::cout << "Collision detected! Warrior and Goblin are interacting." << std::endl;
+                cout << "Collision detected! Warrior and Goblin are interacting." << endl;
             }
+            break;
 
-            if (enemy.isDefeated() && enemy.isActive()) {
-                std::cout << "Enemy defeated!" << std::endl;
+        case GameState::PauseScreen:
+            // Draw the current game screen first, then overlay the pause elements
+            map.render(window);
+            warrior.render(window);
+            if (enemy.isActive()) {
+                enemy.render(window);
+                window.draw(enemy.getHealthBar());
             }
+            window.draw(pauseOverlay); // Draw the transparent overlay
+            window.draw(pauseTitle);
+            window.draw(resumeText);
+            window.draw(quitText);
+            break;
         }
-                                  break;
-        }
-
-        // Custom cursor
-        customCursor.setPosition(static_cast<float>(Mouse::getPosition(window).x), static_cast<float>(Mouse::getPosition(window).y));
-        window.draw(customCursor);
 
         // Display the window
         window.display();
