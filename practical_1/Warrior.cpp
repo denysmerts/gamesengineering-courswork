@@ -50,15 +50,16 @@ void Warrior::handleInput(const Map& map) {
     auto position = sprite.getPosition();
     Vector2f nextPosition = position;
 
-    if (Keyboard::isKeyPressed(Keyboard::W) && position.y > 0) {
+    // Keyboard controls: WASD and Arrow keys
+    if ((Keyboard::isKeyPressed(Keyboard::W) || Keyboard::isKeyPressed(Keyboard::Up)) && position.y > 0) {
         nextPosition.y -= 5.f;
         isMoving = true;
     }
-    if (Keyboard::isKeyPressed(Keyboard::S) && position.y + spriteHeight < 1080) {
+    if ((Keyboard::isKeyPressed(Keyboard::S) || Keyboard::isKeyPressed(Keyboard::Down)) && position.y + spriteHeight < 1080) {
         nextPosition.y += 5.f;
         isMoving = true;
     }
-    if (Keyboard::isKeyPressed(Keyboard::A) && position.x > 0) {
+    if ((Keyboard::isKeyPressed(Keyboard::A) || Keyboard::isKeyPressed(Keyboard::Left)) && position.x > 0) {
         nextPosition.x -= 5.f;
         isMoving = true;
         if (!isFacingLeft) {
@@ -67,7 +68,7 @@ void Warrior::handleInput(const Map& map) {
             isFacingLeft = true;
         }
     }
-    if (Keyboard::isKeyPressed(Keyboard::D) && position.x + spriteWidth < 1920) {
+    if ((Keyboard::isKeyPressed(Keyboard::D) || Keyboard::isKeyPressed(Keyboard::Right)) && position.x + spriteWidth < 1920) {
         nextPosition.x += 5.f;
         isMoving = true;
         if (isFacingLeft) {
@@ -80,6 +81,7 @@ void Warrior::handleInput(const Map& map) {
     hitbox.left = nextPosition.x + 64;
     hitbox.top = nextPosition.y + 64;
 
+    // Prevent movement into water tiles
     if (!map.isWaterTile(hitbox.left, hitbox.top)) {
         sprite.setPosition(nextPosition);
     }
@@ -87,7 +89,8 @@ void Warrior::handleInput(const Map& map) {
         isMoving = false;
     }
 
-    if (Keyboard::isKeyPressed(Keyboard::F) && !isFighting) {
+    // Attack action using F key or Mouse Left Button
+    if ((Keyboard::isKeyPressed(Keyboard::F) || Mouse::isButtonPressed(Mouse::Left)) && !isFighting) {
         if (attackClock.getElapsedTime().asSeconds() >= attackCooldown) {
             isFighting = true;
             isAttacking = true;
@@ -95,14 +98,14 @@ void Warrior::handleInput(const Map& map) {
             currentFrame = 0;
             animationClock.restart();
             attackClock.restart();
-
-
             swordSound.play();
         }
     }
 
     currentRow = isMoving ? 1 : (isFighting ? 2 : 0);
 }
+
+
 
 void Warrior::updateHitboxPosition() {
     hitbox.left = sprite.getPosition().x + 64;
