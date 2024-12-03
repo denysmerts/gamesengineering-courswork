@@ -25,7 +25,7 @@ int main() {
     RenderWindow window(VideoMode(1920, 1080), "Goblin Siege");
     window.setFramerateLimit(60);
 
-    // Default fullscreen mode
+    // Fullscreen mode flag
     bool isFullscreen = false;
 
     // Load background texture
@@ -35,13 +35,10 @@ int main() {
         return -1;
     }
     Sprite background(backgroundTexture);
-
-    Vector2u windowSize = window.getSize();
-    Vector2u textureSize = backgroundTexture.getSize();
-
-    float scaleX = static_cast<float>(windowSize.x) / textureSize.x;
-    float scaleY = static_cast<float>(windowSize.y) / textureSize.y;
-    background.setScale(scaleX, scaleY);
+    background.setScale(
+        static_cast<float>(window.getSize().x) / backgroundTexture.getSize().x,
+        static_cast<float>(window.getSize().y) / backgroundTexture.getSize().y
+    );
 
     // Load font
     Font font;
@@ -51,63 +48,47 @@ int main() {
     }
 
     // Start screen elements
-
-    // Center "Press SPACE to start" in the middle of the screen
     Text pressKeyText("Press SPACE to start", font, 50);
-    FloatRect pressKeyBounds = pressKeyText.getLocalBounds();
     pressKeyText.setPosition(
-        (window.getSize().x - pressKeyBounds.width) / 2, // Center horizontally
-        (window.getSize().y - pressKeyBounds.height) / 2 // Center vertically
+        (window.getSize().x - pressKeyText.getLocalBounds().width) / 2,
+        (window.getSize().y - pressKeyText.getLocalBounds().height) / 2
     );
     pressKeyText.setFillColor(Color::White);
 
-    // Dynamically position "Quit Game" button at the bottom of the screen
     Text quitGameButton("Quit Game", font, 40);
-    FloatRect quitGameBounds = quitGameButton.getLocalBounds();
     quitGameButton.setPosition(
-        (window.getSize().x - quitGameBounds.width) / 2, // Center horizontally
-        window.getSize().y - quitGameBounds.height - 50 // 50 pixels above the bottom
+        (window.getSize().x - quitGameButton.getLocalBounds().width) / 2,
+        window.getSize().y - quitGameButton.getLocalBounds().height - 50
     );
     quitGameButton.setFillColor(Color::Red);
 
-    // Dynamically position "Settings" button above "Quit Game"
     Text settingsButton("Settings", font, 40);
-    FloatRect settingsBounds = settingsButton.getLocalBounds();
     settingsButton.setPosition(
-        (window.getSize().x - settingsBounds.width) / 2, // Center horizontally
-        quitGameButton.getPosition().y - settingsBounds.height - 20 // 20 pixels above "Quit Game"
+        (window.getSize().x - settingsButton.getLocalBounds().width) / 2,
+        quitGameButton.getPosition().y - settingsButton.getLocalBounds().height - 20
     );
     settingsButton.setFillColor(Color::White);
 
     // Settings screen elements
     Text fullscreenText("Fullscreen: Windowed", font, 50);
-    FloatRect fullscreenBounds = fullscreenText.getLocalBounds();
     fullscreenText.setPosition(
-        (window.getSize().x - fullscreenBounds.width) / 2,
-        (window.getSize().y - fullscreenBounds.height) / 2 - 50
+        (window.getSize().x - fullscreenText.getLocalBounds().width) / 2,
+        (window.getSize().y - fullscreenText.getLocalBounds().height) / 2 - 50
     );
     fullscreenText.setFillColor(Color::White);
 
     Text fullscreenLeftArrow("<", font, 70);
-    fullscreenLeftArrow.setPosition(
-        fullscreenText.getPosition().x - 100, // Position to the left of fullscreen text
-        fullscreenText.getPosition().y
-    );
+    fullscreenLeftArrow.setPosition(fullscreenText.getPosition().x - 100, fullscreenText.getPosition().y);
     fullscreenLeftArrow.setFillColor(Color::White);
 
     Text fullscreenRightArrow(">", font, 70);
-    fullscreenRightArrow.setPosition(
-        fullscreenText.getPosition().x + fullscreenBounds.width + 50, // Position to the right of fullscreen text
-        fullscreenText.getPosition().y
-    );
+    fullscreenRightArrow.setPosition(fullscreenText.getPosition().x + fullscreenText.getLocalBounds().width + 50, fullscreenText.getPosition().y);
     fullscreenRightArrow.setFillColor(Color::White);
 
-    // Dynamically position "Back" button to center bottom
     Text backText("Back", font, 50);
-    FloatRect backBounds = backText.getLocalBounds();
     backText.setPosition(
-        (window.getSize().x - backBounds.width) / 2, // Center horizontally
-        window.getSize().y - backBounds.height - 50 // Slightly above the bottom
+        (window.getSize().x - backText.getLocalBounds().width) / 2,
+        window.getSize().y - backText.getLocalBounds().height - 50
     );
     backText.setFillColor(Color::Yellow);
 
@@ -124,7 +105,6 @@ int main() {
     quitText.setPosition(750, 500);
     quitText.setFillColor(Color::Yellow);
 
-    // Semi-transparent background for pause screen
     RectangleShape pauseOverlay(Vector2f(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)));
     pauseOverlay.setFillColor(Color(0, 0, 0, 150));
 
@@ -136,6 +116,22 @@ int main() {
     warrior.getSprite().setPosition(200, 200);
     map.load();
 
+    // Storyline elements
+    bool isStorylineActive = true;
+    vector<string> storylineTexts = { "Oh no! Our village is under attack!", "We need a brave warrior to save us!" };
+    size_t currentTextIndex = 0;
+
+    RectangleShape textBox(Vector2f(window.getSize().x * 0.8f, 150));
+    textBox.setFillColor(Color(0, 0, 0, 200));
+    textBox.setPosition(
+        (window.getSize().x - textBox.getSize().x) / 2,
+        window.getSize().y - textBox.getSize().y - 50
+    );
+
+    Text storylineText("", font, 30);
+    storylineText.setFillColor(Color::White);
+    storylineText.setPosition(textBox.getPosition().x + 20, textBox.getPosition().y + 20);
+
     // Game state management
     GameState currentState = GameState::StartScreen;
 
@@ -143,68 +139,55 @@ int main() {
     while (window.isOpen()) {
         Event event;
         while (window.pollEvent(event)) {
-            if (event.type == Event::Closed)
-                window.close();
+            if (event.type == Event::Closed) window.close();
 
-            // Handle "Press SPACE to start", "Settings", or "Quit Game" on StartScreen
+            // Start screen interactions
             if (currentState == GameState::StartScreen) {
                 if (event.type == Event::KeyPressed && event.key.code == Keyboard::Space) {
                     currentState = GameState::GameScreen;
                 }
                 else if (event.type == Event::MouseButtonPressed && event.mouseButton.button == Mouse::Left) {
                     Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
-
-                    if (settingsButton.getGlobalBounds().contains(mousePos)) {
-                        currentState = GameState::SettingsScreen;
-                    }
-
-                    if (quitGameButton.getGlobalBounds().contains(mousePos)) {
-                        window.close();
-                    }
+                    if (settingsButton.getGlobalBounds().contains(mousePos)) currentState = GameState::SettingsScreen;
+                    if (quitGameButton.getGlobalBounds().contains(mousePos)) window.close();
                 }
             }
 
-            // Settings screen interaction
+            // Settings screen interactions
             if (currentState == GameState::SettingsScreen) {
                 if (event.type == Event::MouseButtonPressed && event.mouseButton.button == Mouse::Left) {
                     Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
-
-                    // Toggle fullscreen mode
-                    if (fullscreenLeftArrow.getGlobalBounds().contains(mousePos) ||
-                        fullscreenRightArrow.getGlobalBounds().contains(mousePos)) {
+                    if (fullscreenLeftArrow.getGlobalBounds().contains(mousePos) || fullscreenRightArrow.getGlobalBounds().contains(mousePos)) {
                         isFullscreen = !isFullscreen;
                         fullscreenText.setString(isFullscreen ? "Fullscreen: On" : "Fullscreen: Windowed");
                         applyResolution(window, VideoMode(1920, 1080), isFullscreen);
                     }
+                    if (backText.getGlobalBounds().contains(mousePos)) currentState = GameState::StartScreen;
+                }
+            }
 
-                    // Back to Start Screen
-                    if (backText.getGlobalBounds().contains(mousePos)) {
-                        currentState = GameState::StartScreen;
-                    }
+            // Storyline interaction
+            if (currentState == GameState::GameScreen && isStorylineActive) {
+                if (event.type == Event::KeyPressed && event.key.code == Keyboard::Enter) {
+                    currentTextIndex++;
+                    if (currentTextIndex >= storylineTexts.size()) isStorylineActive = false;
+                    else storylineText.setString(storylineTexts[currentTextIndex]);
                 }
             }
 
             // Pause and resume logic
-            if (currentState == GameState::GameScreen && event.type == Event::KeyPressed) {
-                if (event.key.code == Keyboard::Escape) {
-                    currentState = GameState::PauseScreen;
-                }
+            if (currentState == GameState::GameScreen && !isStorylineActive && event.type == Event::KeyPressed) {
+                if (event.key.code == Keyboard::Escape) currentState = GameState::PauseScreen;
             }
 
             if (currentState == GameState::PauseScreen && event.type == Event::KeyPressed) {
-                if (event.key.code == Keyboard::R) {
-                    currentState = GameState::GameScreen;
-                }
-                else if (event.key.code == Keyboard::Q) {
-                    currentState = GameState::StartScreen;
-                }
+                if (event.key.code == Keyboard::R) currentState = GameState::GameScreen;
+                else if (event.key.code == Keyboard::Q) currentState = GameState::StartScreen;
             }
         }
 
-        // Clear the window
+        // Rendering logic
         window.clear();
-
-        // State-specific rendering
         switch (currentState) {
         case GameState::StartScreen:
             window.draw(background);
@@ -221,11 +204,20 @@ int main() {
                 window.draw(enemy.getHealthBar());
                 enemy.moveTowardsPlayer(warrior.getSprite().getPosition());
             }
-            warrior.update(enemy, map);
-            enemy.update(map);
+
+            if (!isStorylineActive) {
+                warrior.update(enemy, map);
+                enemy.update(map);
+            }
 
             if (CollisionManager::checkCollision(warrior, enemy)) {
                 cout << "Collision detected! Warrior and Goblin are interacting." << endl;
+            }
+
+            if (isStorylineActive) {
+                window.draw(textBox);
+                storylineText.setString(storylineTexts[currentTextIndex]);
+                window.draw(storylineText);
             }
             break;
 
@@ -250,7 +242,6 @@ int main() {
             break;
         }
 
-        // Display the window
         window.display();
     }
 
