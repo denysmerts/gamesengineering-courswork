@@ -15,6 +15,12 @@ Warrior::Warrior()
         cerr << "Error loading sword sound!" << endl;
     }
     swordSound.setBuffer(swordSoundBuffer);
+
+    if (!walkingSoundBuffer.loadFromFile("output/assets/walking-sound.wav")) {
+        cerr << "Error loading walking sound!" << endl;
+    }
+    walkingSound.setBuffer(walkingSoundBuffer);
+    walkingSound.setLoop(true); // Loop the walking sound
 }
 
 void Warrior::initializeSprite() {
@@ -45,6 +51,7 @@ void Warrior::update(Enemy& enemy, const Map& map) {
 }
 
 void Warrior::handleInput(const Map& map) {
+    bool wasMoving = isMoving;
     isMoving = false;
     isAttacking = false;
     auto position = sprite.getPosition();
@@ -89,6 +96,14 @@ void Warrior::handleInput(const Map& map) {
         isMoving = false;
     }
 
+    // Walking sound logic
+    if (isMoving && !wasMoving) {
+        walkingSound.play();
+    }
+    else if (!isMoving && wasMoving) {
+        walkingSound.stop();
+    }
+
     // Attack action using F key or Mouse Left Button
     if ((Keyboard::isKeyPressed(Keyboard::F) || Mouse::isButtonPressed(Mouse::Left)) && !isFighting) {
         if (attackClock.getElapsedTime().asSeconds() >= attackCooldown) {
@@ -104,8 +119,6 @@ void Warrior::handleInput(const Map& map) {
 
     currentRow = isMoving ? 1 : (isFighting ? 2 : 0);
 }
-
-
 
 void Warrior::updateHitboxPosition() {
     hitbox.left = sprite.getPosition().x + 64;

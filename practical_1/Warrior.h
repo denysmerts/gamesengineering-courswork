@@ -33,8 +33,11 @@ private:
     FloatRect hitbox;
     Clock attackClock;
 
-    SoundBuffer swordSoundBuffer; 
-    Sound swordSound;             
+    SoundBuffer swordSoundBuffer;
+    Sound swordSound;
+
+    SoundBuffer walkingSoundBuffer; // Buffer for walking sound
+    Sound walkingSound;             // Sound for walking
 };
 
 #endif
