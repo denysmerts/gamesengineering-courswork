@@ -1,32 +1,36 @@
 #include "Warrior.h"
 #include <iostream>
 #include <SFML/Audio.hpp>
+#include "AssetManager.h"
 
 using namespace sf;
 using namespace std;
 
+// Singleton instance getter
+Warrior& Warrior::getInstance() {
+    static Warrior instance; // Guaranteed to be destroyed and instantiated on first use
+    return instance;
+}
+
+// Private constructor
 Warrior::Warrior()
     : Character(6, 0.1f, 192, 192, 100, 5.0f),
     isMoving(false), isFighting(false), isFacingLeft(false),
     isAttacking(false), attackCooldown(1.0f) {
     initializeSprite();
 
-    if (!swordSoundBuffer.loadFromFile("output/assets/sword-sound.wav")) {
-        cerr << "Error loading sword sound!" << endl;
-    }
+    // Load sounds using AssetManager
+    swordSoundBuffer = AssetManager::getInstance().getSoundBuffer("output/assets/sword-sound.wav");
     swordSound.setBuffer(swordSoundBuffer);
 
-    if (!walkingSoundBuffer.loadFromFile("output/assets/walking-sound.wav")) {
-        cerr << "Error loading walking sound!" << endl;
-    }
+    walkingSoundBuffer = AssetManager::getInstance().getSoundBuffer("output/assets/walking-sound.wav");
     walkingSound.setBuffer(walkingSoundBuffer);
     walkingSound.setLoop(true); // Loop the walking sound
 }
 
 void Warrior::initializeSprite() {
-    if (!texture.loadFromFile("output/assets/warrior.png")) {
-        cerr << "Error loading warrior texture!" << endl;
-    }
+    // Load texture using AssetManager
+    texture = AssetManager::getInstance().getTexture("output/assets/warrior.png");
     sprite.setTexture(texture);
     spriteRect = IntRect(0, 0, spriteWidth, spriteHeight);
     sprite.setTextureRect(spriteRect);

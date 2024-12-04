@@ -1,9 +1,18 @@
 #include "Enemy.h"
+#include "AssetManager.h"
 #include <cmath>
 #include <iostream>
+
 using namespace sf;
 using namespace std;
 
+// Singleton instance getter
+Enemy& Enemy::getInstance() {
+    static Enemy instance; // Guaranteed to be destroyed and instantiated on first use
+    return instance;
+}
+
+// Private constructor
 Enemy::Enemy()
     : Character(6, 0.1f, 192, 192, 50, 0.5f),
     moveSpeed(0.5f),
@@ -14,29 +23,27 @@ Enemy::Enemy()
     healthBarOffsetX(64.f),
     healthBarOffsetY(40.f) {
 
-    if (!texture.loadFromFile("output/assets/goblin1.png")) {
-        cerr << "Error loading enemy texture!" << endl;
-    }
-    sprite.setTexture(texture);
+    // Load textures using AssetManager
+    Texture& goblinTexture = AssetManager::getInstance().getTexture("output/assets/goblin1.png");
+    Texture& defeatTex = AssetManager::getInstance().getTexture("output/assets/dead.png");
+
+    // Set up enemy texture and sprite
+    sprite.setTexture(goblinTexture);
     spriteRect = IntRect(0, 0, spriteWidth, spriteHeight);
     sprite.setTextureRect(spriteRect);
     sprite.setPosition(600, 300);
 
-    
-    if (!defeatTexture.loadFromFile("output/assets/dead.png")) {
-        cerr << "Error loading enemy defeat texture!" << endl;
-    }
+    // Set up defeat sprite
+    defeatTexture = defeatTex;
     defeatSprite.setTexture(defeatTexture);
 
     // Initialize health bar
     healthBar.setSize(Vector2f(50.f, 5.f));
     healthBar.setFillColor(Color::Green);
     healthBar.setPosition(sprite.getPosition().x + healthBarOffsetX, sprite.getPosition().y);
-
 }
 
 void Enemy::update(const Map& map) {
-
     if (!active) return;
 
     if (health <= 0) {
@@ -59,11 +66,9 @@ void Enemy::update(const Map& map) {
     // Update health bar size based on health
     healthBar.setSize(Vector2f(50.f * (static_cast<float>(health) / 50.f), 5.f));
 
-    
     // Update health bar position dynamically to follow the sprite
     Vector2f spritePos = sprite.getPosition();
-    healthBar.setPosition(spritePos.x + healthBarOffsetX, spritePos.y + healthBarOffsetY); 
-
+    healthBar.setPosition(spritePos.x + healthBarOffsetX, spritePos.y + healthBarOffsetY);
 }
 
 void Enemy::reset() {

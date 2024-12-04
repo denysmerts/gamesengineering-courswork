@@ -10,8 +10,10 @@ using namespace sf;
 
 class Warrior : public Character {
 public:
+    // Get the singleton instance
+    static Warrior& getInstance();
 
-    Warrior();
+    // Public methods
     void update(const Map& map) override;
     void update(Enemy& enemy, const Map& map);
     void animate() override;
@@ -23,7 +25,16 @@ public:
     Sprite getSprite() const { return sprite; }
     FloatRect getHitbox() const;
 
+    // Deleted copy constructor and assignment operator to enforce Singleton
+    Warrior(const Warrior&) = delete;
+    Warrior& operator=(const Warrior&) = delete;
+
 private:
+    // Private constructor and destructor for Singleton
+    Warrior();
+    ~Warrior() = default;
+
+    // Member variables
     bool isMoving;
     bool isFighting;
     bool isFacingLeft;

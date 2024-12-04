@@ -5,6 +5,7 @@
 #include "Warrior.h"
 #include "Enemy.h"
 #include "CollisionManager.h"
+#include "AssetManager.h"
 
 using namespace std;
 using namespace sf;
@@ -29,26 +30,18 @@ int main() {
     bool isFullscreen = false;
 
     // Load background texture
-    Texture backgroundTexture;
-    if (!backgroundTexture.loadFromFile("output/assets/background.png")) {
-        cerr << "Failed to load background image!" << endl;
-        return -1;
-    }
-    Sprite background(backgroundTexture);
+    sf::Texture& backgroundTexture = AssetManager::getInstance().getTexture("output/assets/background.png");
+    sf::Sprite background(backgroundTexture);
+
     background.setScale(
         static_cast<float>(window.getSize().x) / backgroundTexture.getSize().x,
         static_cast<float>(window.getSize().y) / backgroundTexture.getSize().y
     );
 
     // Load font
-    Font font;
-    if (!font.loadFromFile("output/assets/IrishGrover-Regular.ttf")) {
-        cerr << "Failed to load font!" << endl;
-        return -1;
-    }
+    sf::Font& font = AssetManager::getInstance().getFont("output/assets/IrishGrover-Regular.ttf");
+    sf::Text pressKeyText("Press SPACE to start", font, 50);
 
-    // Start screen elements
-    Text pressKeyText("Press SPACE to start", font, 50);
     pressKeyText.setPosition(
         (window.getSize().x - pressKeyText.getLocalBounds().width) / 2,
         (window.getSize().y - pressKeyText.getLocalBounds().height) / 2
@@ -110,8 +103,10 @@ int main() {
 
     // Initialize map, warrior, and enemy
     Map map;
-    Warrior warrior;
-    Enemy enemy;
+
+    Warrior& warrior = Warrior::getInstance();
+
+    Enemy& enemy = Enemy::getInstance();
 
     warrior.getSprite().setPosition(200, 200);
     map.load();
