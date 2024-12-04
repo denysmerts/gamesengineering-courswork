@@ -27,22 +27,26 @@ int main() {
     // Fullscreen mode flag
     bool isFullscreen = false;
 
-    // Load background texture
-    sf::Texture& backgroundTexture = AssetManager::getInstance().getTexture("output/assets/background.png");
+    // --------------------- ASSETS LOADING  ----------------------------//
 
-    // Load font
-    sf::Font& font = AssetManager::getInstance().getFont("output/assets/IrishGrover-Regular.ttf");
+    Texture& backgroundTexture = AssetManager::getInstance().getTexture("output/assets/background.png");
 
-    // Initialize screens
+    Font& font = AssetManager::getInstance().getFont("output/assets/IrishGrover-Regular.ttf");
+
+    // --------------------- ASSETS LOADING  ----------------------------//
+   
+
+    // --------------------- INITIALIZATION ----------------------------//
+
     StartScreen startScreen(font, backgroundTexture);
     SettingsScreen settingsScreen(font, isFullscreen);
     PauseScreen pauseScreen(font, window);
 
-    // Initialize map, warrior, and enemy
     Map map;
     Warrior& warrior = Warrior::getInstance();
     Enemy& enemy = Enemy::getInstance();
 
+    // --------------------- INITIALIZATION ----------------------------//
      
     map.load();
 
@@ -125,6 +129,11 @@ int main() {
                 enemy.render(window);
                 window.draw(enemy.getHealthBar());
                 enemy.moveTowardsPlayer(warrior.getSprite().getPosition());
+            }
+
+            // Render defeat sprite if enemy is defeated
+            if (!enemy.isActive() && enemy.isDefeated()) {
+                enemy.drawDefeatSprite(window);
             }
 
             if (!isStorylineActive) {

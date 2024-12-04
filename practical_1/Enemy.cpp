@@ -3,6 +3,8 @@
 #include <cmath>
 #include <iostream>
 
+#include <SFML/Audio.hpp>
+
 using namespace sf;
 using namespace std;
 
@@ -27,6 +29,9 @@ Enemy::Enemy()
     Texture& goblinTexture = AssetManager::getInstance().getTexture("output/assets/goblin1.png");
     Texture& defeatTex = AssetManager::getInstance().getTexture("output/assets/dead.png");
 
+    deathSoundBuffer = AssetManager::getInstance().getSoundBuffer("output/assets/goblin-death.wav");
+    deathSound.setBuffer(deathSoundBuffer);
+
     // Set up enemy texture and sprite
     sprite.setTexture(goblinTexture);
     spriteRect = IntRect(0, 0, spriteWidth, spriteHeight);
@@ -44,32 +49,55 @@ Enemy::Enemy()
 }
 
 void Enemy::update(const Map& map) {
-    if (!active) return;
+    if (!active && !defeatAnimationStarted) return;
 
     if (health <= 0) {
         if (!defeatAnimationStarted) {
-            defeatSprite.setTextureRect(IntRect(128, 0, 128, 128));
+            defeatSprite.setTexture(defeatTexture);
+            defeatSprite.setTextureRect(IntRect(1, 1, 128, 128)); // Start with the first frame
             defeatSprite.setScale(sprite.getScale());
             defeatSprite.setPosition(sprite.getPosition());
             defeatAnimationStarted = true;
+
+            deathSound.play();
         }
 
-        defeatFrameCount++;
-        if (defeatFrameCount > 60) {
-            active = false;
+        // Animate defeat sprite
+        if (defeatAnimationStarted) {
+            int frame = defeatFrameCount / 10; // Adjust speed of animation (10 frames per defeat frame)
+            if (frame < 14) {
+                // Calculate frame coordinates
+                int frameX = (frame % 7) * 128;
+                int frameY = (frame / 7) * 128;
+                defeatSprite.setTextureRect(IntRect(frameX, frameY, 128, 128));
+            }
+            else {
+                active = false; // End animation after all frames
+            }
+            defeatFrameCount++;
         }
+
         return;
     }
 
+    // Normal updates for active enemy
     animate();
-
-    // Update health bar size based on health
     healthBar.setSize(Vector2f(50.f * (static_cast<float>(health) / 50.f), 5.f));
-
-    // Update health bar position dynamically to follow the sprite
     Vector2f spritePos = sprite.getPosition();
     healthBar.setPosition(spritePos.x + healthBarOffsetX, spritePos.y + healthBarOffsetY);
 }
+
+void Enemy::drawDefeatSprite(RenderWindow& window) {
+    if (defeatAnimationStarted) {
+        // Set the texture rect to the 7th frame (first row, 6th column)
+        defeatSprite.setTextureRect(IntRect(768, 0, 128, 128)); // Frame 7 (0-based indexing)
+        defeatSprite.setScale(sprite.getScale());
+        defeatSprite.setPosition(sprite.getPosition());
+        window.draw(defeatSprite);
+    }
+}
+
+
 
 void Enemy::reset() {
     // Reset enemy state
@@ -134,8 +162,3 @@ bool Enemy::isActive() const {
     return active;
 }
 
-void Enemy::drawDefeatSprite(RenderWindow& window) {
-    if (defeatAnimationStarted && !active) {
-        window.draw(defeatSprite);
-    }
-}

@@ -3,16 +3,15 @@
 
 #include "Character.h"
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp> // Ensure this is included
 
 using namespace sf;
 
 class Enemy : public Character {
 public:
-    // Singleton instance accessor
     static Enemy& getInstance();
 
-    // Public methods
-    void update(const Map& map) override;
+    void update(const Map& map) override; // Correct use of override
     void reset();
     void drawDefeatSprite(RenderWindow& window);
     void moveTowardsPlayer(Vector2f playerPosition);
@@ -25,16 +24,13 @@ public:
     Sprite getSprite() const;
     RectangleShape getHealthBar() const;
 
-    // Deleted copy constructor and assignment operator to enforce Singleton
     Enemy(const Enemy&) = delete;
     Enemy& operator=(const Enemy&) = delete;
 
 private:
-    // Private constructor and destructor for Singleton
     Enemy();
     ~Enemy() = default;
 
-    // Member variables
     bool active;
     bool isFacingLeft;
     bool defeatAnimationStarted;
@@ -48,6 +44,10 @@ private:
     Texture defeatTexture;
     Sprite defeatSprite;
     RectangleShape healthBar;
+
+    // Proper declarations
+    SoundBuffer deathSoundBuffer;
+    Sound deathSound;
 };
 
 #endif
