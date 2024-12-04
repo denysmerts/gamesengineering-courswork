@@ -6,19 +6,22 @@
 #include <string>
 #include <memory>
 
+using namespace std;
+using namespace sf;
+
 class AssetManager {
 public:
     // Get the singleton instance
     static AssetManager& getInstance();
 
     // Load and retrieve textures
-    sf::Texture& getTexture(const std::string& filename);
+    Texture& getTexture(const string& filename);
 
     // Load and retrieve fonts
-    sf::Font& getFont(const std::string& filename);
+    Font& getFont(const string& filename);
 
     // Load and retrieve sound buffers
-    sf::SoundBuffer& getSoundBuffer(const std::string& filename);
+    SoundBuffer& getSoundBuffer(const string& filename);
 
 private:
     // Private constructor to prevent instantiation
@@ -29,7 +32,7 @@ private:
     AssetManager& operator=(const AssetManager&) = delete;
 
     // Maps for caching loaded assets
-    std::unordered_map<std::string, sf::Texture> textures;
-    std::unordered_map<std::string, sf::Font> fonts;
-    std::unordered_map<std::string, sf::SoundBuffer> soundBuffers;
+    unordered_map<string, Texture> textures;
+    unordered_map<string, Font> fonts;
+    unordered_map<string, SoundBuffer> soundBuffers;
 };
