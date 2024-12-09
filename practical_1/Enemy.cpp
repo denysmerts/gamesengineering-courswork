@@ -1,65 +1,99 @@
 #include "Enemy.h"
+#include "AssetManager.h"
+#include "Warrior.h"
 #include <cmath>
 #include <iostream>
+
 using namespace sf;
 using namespace std;
 
+// Singleton instance getter
+Enemy& Enemy::getInstance() {
+    static Enemy instance;
+    return instance;
+}
+
+// Private constructor
 Enemy::Enemy()
     : Character(6, 0.1f, 192, 192, 50, 0.5f),
     moveSpeed(0.5f),
     isFacingLeft(false),
     active(true),
     defeatAnimationStarted(false),
-    defeatFrameCount(0) {
-    if (!texture.loadFromFile("output/assets/goblin1.png")) {
-        cerr << "Error loading enemy texture!" << endl;
-    }
-    sprite.setTexture(texture);
+    defeatFrameCount(0),
+    healthBarOffsetX(64.f),
+    healthBarOffsetY(40.f),
+    attackDamage(5.f),
+    attackCooldownTime(1.0f) {
+
+    // Load textures using AssetManager
+    Texture& goblinTexture = AssetManager::getInstance().getTexture("output/assets/goblin1.png");
+    Texture& defeatTex = AssetManager::getInstance().getTexture("output/assets/dead.png");
+
+    deathSoundBuffer = AssetManager::getInstance().getSoundBuffer("output/assets/goblin-death.wav");
+    deathSound.setBuffer(deathSoundBuffer);
+
+    // Set up enemy texture and sprite
+    sprite.setTexture(goblinTexture);
     spriteRect = IntRect(0, 0, spriteWidth, spriteHeight);
     sprite.setTextureRect(spriteRect);
     sprite.setPosition(600, 300);
 
-    // Load defeat texture
-    if (!defeatTexture.loadFromFile("output/assets/dead.png")) {
-        cerr << "Error loading enemy defeat texture!" << endl;
-    }
+    // Set up defeat sprite
+    defeatTexture = defeatTex;
     defeatSprite.setTexture(defeatTexture);
 
     // Initialize health bar
-    healthBar.setSize(sf::Vector2f(50.f, 5.f));
-    healthBar.setFillColor(sf::Color::Green);
-    healthBar.setPosition(sprite.getPosition().x, sprite.getPosition().y - 0.5f);
-
+    healthBar.setSize(Vector2f(50.f, 5.f));
+    healthBar.setFillColor(Color::Green);
+    healthBar.setPosition(sprite.getPosition().x + healthBarOffsetX, sprite.getPosition().y);
 }
 
 void Enemy::update(const Map& map) {
-    if (!active) return;
+    if (!active && !defeatAnimationStarted) return;
 
     if (health <= 0) {
         if (!defeatAnimationStarted) {
-            defeatSprite.setTextureRect(IntRect(128, 0, 128, 128));
+            defeatSprite.setTexture(defeatTexture);
+            defeatSprite.setTextureRect(IntRect(1, 1, 128, 128));
             defeatSprite.setScale(sprite.getScale());
             defeatSprite.setPosition(sprite.getPosition());
             defeatAnimationStarted = true;
+
+            deathSound.play();
         }
 
-        defeatFrameCount++;
-        if (defeatFrameCount > 60) {
-            active = false;
+        // Animate defeat sprite
+        if (defeatAnimationStarted) {
+            int frame = defeatFrameCount / 10;
+            if (frame < 14) {
+                int frameX = (frame % 7) * 128;
+                int frameY = (frame / 7) * 128;
+                defeatSprite.setTextureRect(IntRect(frameX, frameY, 128, 128));
+            }
+            else {
+                active = false;
+            }
+            defeatFrameCount++;
         }
+
         return;
     }
 
+    // Normal updates for active enemy
     animate();
+    healthBar.setSize(Vector2f(50.f * (static_cast<float>(health) / 50.f), 5.f));
+    Vector2f spritePos = sprite.getPosition();
+    healthBar.setPosition(spritePos.x + healthBarOffsetX, spritePos.y + healthBarOffsetY);
+}
 
-    // Update health bar size and position
-    healthBar.setSize(sf::Vector2f(50.f * (static_cast<float>(health) / 50.f), 5.f));
-    healthBar.setPosition(sprite.getPosition().x, sprite.getPosition().y - 0.5f);
-
+void Enemy::drawDefeatSprite(RenderWindow& window) {
+    if (defeatAnimationStarted) {
+        window.draw(defeatSprite);
+    }
 }
 
 void Enemy::reset() {
-    // Reset enemy state
     health = 50;
     active = true;
     defeatAnimationStarted = false;
@@ -67,7 +101,7 @@ void Enemy::reset() {
     sprite.setPosition(600, 300);
 }
 
-bool Enemy::checkCollision(const sf::Sprite& warrior) {
+bool Enemy::checkCollision(const Sprite& warrior) {
     return sprite.getGlobalBounds().intersects(warrior.getGlobalBounds());
 }
 
@@ -113,7 +147,7 @@ Sprite Enemy::getSprite() const {
     return sprite;
 }
 
-sf::RectangleShape Enemy::getHealthBar() const {
+RectangleShape Enemy::getHealthBar() const {
     return healthBar;
 }
 
@@ -121,8 +155,11 @@ bool Enemy::isActive() const {
     return active;
 }
 
-void Enemy::drawDefeatSprite(sf::RenderWindow& window) {
-    if (defeatAnimationStarted && !active) {
-        window.draw(defeatSprite);
+// New method for dealing damage
+void Enemy::dealDamage(Warrior& warrior) {
+    if (attackCooldown.getElapsedTime().asSeconds() >= attackCooldownTime) {
+        warrior.takeDamage(attackDamage);
+        attackCooldown.restart();
+        cout << "Enemy dealt " << attackDamage << " damage to Warrior!" << endl;
     }
 }
