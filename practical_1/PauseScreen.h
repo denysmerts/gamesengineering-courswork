@@ -17,7 +17,9 @@ private:
 public:
     PauseScreen(Font& font, RenderWindow& window);
 
+
     void handleEvent(Event& event, bool& resumeGame, bool& quitToMainMenu, bool& restartGame);
+
     void render(RenderWindow& window);
 };
 

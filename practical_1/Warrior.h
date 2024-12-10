@@ -2,7 +2,9 @@
 #define WARRIOR_H
 
 #include <SFML/Audio.hpp>
+
 #include <SFML/Graphics.hpp>
+
 #include "Character.h"
 #include "Map.h"
 #include "Enemy.h"
@@ -37,6 +39,13 @@ public:
     Warrior(const Warrior&) = delete;
     Warrior& operator=(const Warrior&) = delete;
 
+    Sprite getSprite() const { return sprite; }
+    FloatRect getHitbox() const;
+
+    // Deleted copy constructor and assignment operator to enforce Singleton
+    Warrior(const Warrior&) = delete;
+    Warrior& operator=(const Warrior&) = delete;
+
 private:
     // Private constructor and destructor for Singleton
     Warrior();
@@ -58,11 +67,13 @@ private:
     SoundBuffer walkingSoundBuffer; // Buffer for walking sound
     Sound walkingSound;             // Sound for walking
 
+
     // New member variables for health bar
     RectangleShape healthBar;
     float maxHealth;
     float currentHealth;
     Vector2f healthBarOffset;
+
 };
 
 #endif

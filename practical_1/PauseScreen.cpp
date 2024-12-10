@@ -39,7 +39,9 @@ PauseScreen::PauseScreen(Font& font, RenderWindow& window)
     );
 }
 
+
 void PauseScreen::handleEvent(Event& event, bool& resumeGame, bool& quitToMainMenu, bool& restartGame) {
+
     if (event.type == Event::KeyPressed) {
         if (event.key.code == Keyboard::R) {
             resumeGame = true;

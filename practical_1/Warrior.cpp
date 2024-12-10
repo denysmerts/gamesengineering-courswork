@@ -4,6 +4,7 @@
 #include <SFML/Audio.hpp>
 #include "AssetManager.h"
 
+
 using namespace sf;
 using namespace std;
 
@@ -12,6 +13,7 @@ Warrior& Warrior::getInstance() {
     static Warrior instance; // Guaranteed to be destroyed and instantiated on first use
     return instance;
 }
+
 
 // Private constructor
 Warrior::Warrior()
@@ -27,10 +29,12 @@ Warrior::Warrior()
     walkingSoundBuffer = AssetManager::getInstance().getSoundBuffer("output/assets/walking-sound.wav");
     walkingSound.setBuffer(walkingSoundBuffer);
     walkingSound.setLoop(true); // Loop the walking sound
+
     // Initialize health bar
     healthBar.setSize(Vector2f(200.f, 10.f));
     healthBar.setFillColor(Color::Green);
     updateHealthBarPosition();
+
 }
 
 void Warrior::initializeSprite() {
@@ -193,6 +197,7 @@ void Warrior::attack(Enemy& enemy) {
         isAttacking = false;
     }
 }
+
 bool Warrior::isDefeated() const {
     return currentHealth <= 0;
 }

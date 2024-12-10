@@ -9,8 +9,10 @@
 #include "SettingsScreen.h"
 #include "StartScreen.h"
 #include "PauseScreen.h"
+
 #include "GameOverScreen.h" // Include Game Over Screen
 #include "WinScreen.h"      // Include Win Screen
+
 
 using namespace std;
 using namespace sf;
@@ -20,8 +22,10 @@ enum class GameState {
     SettingsScreen,
     GameScreen,
     PauseScreen,
+
     GameOver,
     Win,
+
 };
 
 int main() {
@@ -30,6 +34,7 @@ int main() {
 
     // Fullscreen mode flag
     bool isFullscreen = false;
+
     bool restartGame = false;
 
     // Assets Loading
@@ -163,6 +168,7 @@ int main() {
         }
 
         // Rendering
+
         window.clear();
         switch (currentState) {
         case GameState::StartScreen:
@@ -171,6 +177,7 @@ int main() {
 
         case GameState::GameScreen:
             map.render(window);
+
             if (enemy.isActive()) {
                 enemy.render(window);
                 window.draw(enemy.getHealthBar());
@@ -205,6 +212,7 @@ int main() {
 
         case GameState::Win:
             winScreen.render(window);       // Render the Win screen
+
             break;
         }
 

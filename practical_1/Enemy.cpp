@@ -1,15 +1,19 @@
 #include "Enemy.h"
 #include "AssetManager.h"
+
 #include "Warrior.h"
 #include <cmath>
 #include <iostream>
+
 
 using namespace sf;
 using namespace std;
 
 // Singleton instance getter
 Enemy& Enemy::getInstance() {
+
     static Enemy instance;
+
     return instance;
 }
 
@@ -22,9 +26,11 @@ Enemy::Enemy()
     defeatAnimationStarted(false),
     defeatFrameCount(0),
     healthBarOffsetX(64.f),
+
     healthBarOffsetY(40.f),
     attackDamage(5.f),
     attackCooldownTime(1.0f) {
+
 
     // Load textures using AssetManager
     Texture& goblinTexture = AssetManager::getInstance().getTexture("output/assets/goblin1.png");
@@ -55,7 +61,9 @@ void Enemy::update(const Map& map) {
     if (health <= 0) {
         if (!defeatAnimationStarted) {
             defeatSprite.setTexture(defeatTexture);
+
             defeatSprite.setTextureRect(IntRect(1, 1, 128, 128));
+
             defeatSprite.setScale(sprite.getScale());
             defeatSprite.setPosition(sprite.getPosition());
             defeatAnimationStarted = true;
@@ -65,14 +73,18 @@ void Enemy::update(const Map& map) {
 
         // Animate defeat sprite
         if (defeatAnimationStarted) {
+
             int frame = defeatFrameCount / 10;
             if (frame < 14) {
+
                 int frameX = (frame % 7) * 128;
                 int frameY = (frame / 7) * 128;
                 defeatSprite.setTextureRect(IntRect(frameX, frameY, 128, 128));
             }
             else {
+
                 active = false;
+
             }
             defeatFrameCount++;
         }
@@ -89,9 +101,17 @@ void Enemy::update(const Map& map) {
 
 void Enemy::drawDefeatSprite(RenderWindow& window) {
     if (defeatAnimationStarted) {
+
+        // Set the texture rect to the 7th frame (first row, 6th column)
+        defeatSprite.setTextureRect(IntRect(768, 0, 128, 128)); // Frame 7 (0-based indexing)
+        defeatSprite.setScale(sprite.getScale());
+        defeatSprite.setPosition(sprite.getPosition());
+
         window.draw(defeatSprite);
     }
 }
+
+
 
 void Enemy::reset() {
     health = 50;
@@ -155,6 +175,7 @@ bool Enemy::isActive() const {
     return active;
 }
 
+
 // New method for dealing damage
 void Enemy::dealDamage(Warrior& warrior) {
     if (attackCooldown.getElapsedTime().asSeconds() >= attackCooldownTime) {
@@ -163,3 +184,4 @@ void Enemy::dealDamage(Warrior& warrior) {
         cout << "Enemy dealt " << attackDamage << " damage to Warrior!" << endl;
     }
 }
+

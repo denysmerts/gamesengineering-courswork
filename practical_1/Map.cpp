@@ -162,16 +162,16 @@ void Map::render(RenderWindow& window) {
         }
     }
 
-    RectangleShape debugTile(Vector2f(titleWidth, titleHeight));
-    debugTile.setFillColor(Color(255, 0, 0, 128)); // Semi-transparent red
-    for (size_t row = 0; row < MAP_HEIGHT; row++) {
-        for (size_t col = 0; col < MAP_WIDTH; col++) {
-            if (wallData[row][col] == 14) { // Check if water tile
-                debugTile.setPosition(Vector2f(100 + col * titleWidth, 100 + row * titleHeight));
-                window.draw(debugTile); // Draw debug overlay
-            }
-        }
-    }
+    //RectangleShape debugTile(Vector2f(titleWidth, titleHeight));
+    //debugTile.setFillColor(Color(255, 0, 0, 128)); // Semi-transparent red
+    //for (size_t row = 0; row < MAP_HEIGHT; row++) {
+    //    for (size_t col = 0; col < MAP_WIDTH; col++) {
+    //        if (wallData[row][col] == 14) { // Check if water tile
+    //            debugTile.setPosition(Vector2f(100 + col * titleWidth, 100 + row * titleHeight));
+    //            window.draw(debugTile); // Draw debug overlay
+    //        }
+    //    }
+    //}
 
     // Render objects
     for (const auto& obj : mapObjects) {
