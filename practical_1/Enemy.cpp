@@ -1,16 +1,19 @@
 #include "Enemy.h"
 #include "AssetManager.h"
+
+#include "Warrior.h"
 #include <cmath>
 #include <iostream>
 
-#include <SFML/Audio.hpp>
 
 using namespace sf;
 using namespace std;
 
 // Singleton instance getter
 Enemy& Enemy::getInstance() {
-    static Enemy instance; // Guaranteed to be destroyed and instantiated on first use
+
+    static Enemy instance;
+
     return instance;
 }
 
@@ -23,7 +26,11 @@ Enemy::Enemy()
     defeatAnimationStarted(false),
     defeatFrameCount(0),
     healthBarOffsetX(64.f),
-    healthBarOffsetY(40.f) {
+
+    healthBarOffsetY(40.f),
+    attackDamage(5.f),
+    attackCooldownTime(1.0f) {
+
 
     // Load textures using AssetManager
     Texture& goblinTexture = AssetManager::getInstance().getTexture("output/assets/goblin1.png");
@@ -54,7 +61,9 @@ void Enemy::update(const Map& map) {
     if (health <= 0) {
         if (!defeatAnimationStarted) {
             defeatSprite.setTexture(defeatTexture);
-            defeatSprite.setTextureRect(IntRect(1, 1, 128, 128)); // Start with the first frame
+
+            defeatSprite.setTextureRect(IntRect(1, 1, 128, 128));
+
             defeatSprite.setScale(sprite.getScale());
             defeatSprite.setPosition(sprite.getPosition());
             defeatAnimationStarted = true;
@@ -64,15 +73,18 @@ void Enemy::update(const Map& map) {
 
         // Animate defeat sprite
         if (defeatAnimationStarted) {
-            int frame = defeatFrameCount / 10; // Adjust speed of animation (10 frames per defeat frame)
+
+            int frame = defeatFrameCount / 10;
             if (frame < 14) {
-                // Calculate frame coordinates
+
                 int frameX = (frame % 7) * 128;
                 int frameY = (frame / 7) * 128;
                 defeatSprite.setTextureRect(IntRect(frameX, frameY, 128, 128));
             }
             else {
-                active = false; // End animation after all frames
+
+                active = false;
+
             }
             defeatFrameCount++;
         }
@@ -89,10 +101,12 @@ void Enemy::update(const Map& map) {
 
 void Enemy::drawDefeatSprite(RenderWindow& window) {
     if (defeatAnimationStarted) {
+
         // Set the texture rect to the 7th frame (first row, 6th column)
         defeatSprite.setTextureRect(IntRect(768, 0, 128, 128)); // Frame 7 (0-based indexing)
         defeatSprite.setScale(sprite.getScale());
         defeatSprite.setPosition(sprite.getPosition());
+
         window.draw(defeatSprite);
     }
 }
@@ -100,7 +114,6 @@ void Enemy::drawDefeatSprite(RenderWindow& window) {
 
 
 void Enemy::reset() {
-    // Reset enemy state
     health = 50;
     active = true;
     defeatAnimationStarted = false;
@@ -160,5 +173,15 @@ RectangleShape Enemy::getHealthBar() const {
 
 bool Enemy::isActive() const {
     return active;
+}
+
+
+// New method for dealing damage
+void Enemy::dealDamage(Warrior& warrior) {
+    if (attackCooldown.getElapsedTime().asSeconds() >= attackCooldownTime) {
+        warrior.takeDamage(attackDamage);
+        attackCooldown.restart();
+        cout << "Enemy dealt " << attackDamage << " damage to Warrior!" << endl;
+    }
 }
 

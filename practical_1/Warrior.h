@@ -2,6 +2,9 @@
 #define WARRIOR_H
 
 #include <SFML/Audio.hpp>
+
+#include <SFML/Graphics.hpp>
+
 #include "Character.h"
 #include "Map.h"
 #include "Enemy.h"
@@ -21,6 +24,20 @@ public:
     void initializeSprite();
     void updateHitboxPosition();
     void attack(Enemy& enemy);
+    void reset();
+    Sprite getSprite() const { return sprite; }
+    FloatRect getHitbox() const;
+
+    // New methods for health bar
+    void updateHealthBarPosition();
+    void takeDamage(float damage);
+    void updateHealthBar();
+    RectangleShape getHealthBar() const;
+
+    bool isDefeated() const;
+    // Deleted copy constructor and assignment operator to enforce Singleton
+    Warrior(const Warrior&) = delete;
+    Warrior& operator=(const Warrior&) = delete;
 
     Sprite getSprite() const { return sprite; }
     FloatRect getHitbox() const;
@@ -49,6 +66,14 @@ private:
 
     SoundBuffer walkingSoundBuffer; // Buffer for walking sound
     Sound walkingSound;             // Sound for walking
+
+
+    // New member variables for health bar
+    RectangleShape healthBar;
+    float maxHealth;
+    float currentHealth;
+    Vector2f healthBarOffset;
+
 };
 
 #endif

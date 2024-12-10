@@ -1,7 +1,9 @@
+
 #include "Warrior.h"
 #include <iostream>
 #include <SFML/Audio.hpp>
 #include "AssetManager.h"
+
 
 using namespace sf;
 using namespace std;
@@ -12,11 +14,12 @@ Warrior& Warrior::getInstance() {
     return instance;
 }
 
+
 // Private constructor
 Warrior::Warrior()
     : Character(6, 0.1f, 192, 192, 100, 5.0f),
     isMoving(false), isFighting(false), isFacingLeft(false),
-    isAttacking(false), attackCooldown(1.0f) {
+    isAttacking(false), attackCooldown(1.0f), maxHealth(100.f), currentHealth(100.f),healthBarOffset(64.f, 20.f){
     initializeSprite();
 
     // Load sounds using AssetManager
@@ -26,6 +29,12 @@ Warrior::Warrior()
     walkingSoundBuffer = AssetManager::getInstance().getSoundBuffer("output/assets/walking-sound.wav");
     walkingSound.setBuffer(walkingSoundBuffer);
     walkingSound.setLoop(true); // Loop the walking sound
+
+    // Initialize health bar
+    healthBar.setSize(Vector2f(200.f, 10.f));
+    healthBar.setFillColor(Color::Green);
+    updateHealthBarPosition();
+
 }
 
 void Warrior::initializeSprite() {
@@ -45,6 +54,7 @@ void Warrior::update(const Map& map) {
     handleInput(map);
     animate();
     updateHitboxPosition();
+    updateHealthBar();
 }
 
 void Warrior::update(Enemy& enemy, const Map& map) {
@@ -128,6 +138,25 @@ void Warrior::updateHitboxPosition() {
     hitbox.left = sprite.getPosition().x + 64;
     hitbox.top = sprite.getPosition().y + 64;
 }
+void Warrior::updateHealthBarPosition() {
+    Vector2f spritePos = sprite.getPosition();
+    healthBar.setPosition(spritePos.x + healthBarOffset.x, spritePos.y + healthBarOffset.y);
+}
+
+void Warrior::takeDamage(float damage) {
+    currentHealth -= damage;
+    if (currentHealth < 0) currentHealth = 0;
+    updateHealthBar();
+}
+
+void Warrior::updateHealthBar() {
+    float healthPercentage = currentHealth / maxHealth;
+    healthBar.setSize(Vector2f(200.f * healthPercentage, 10.f));
+}
+
+RectangleShape Warrior::getHealthBar() const {
+    return healthBar;
+}
 
 sf::FloatRect Warrior::getHitbox() const {
     return hitbox;
@@ -167,4 +196,40 @@ void Warrior::attack(Enemy& enemy) {
         }
         isAttacking = false;
     }
+}
+
+bool Warrior::isDefeated() const {
+    return currentHealth <= 0;
+}
+void Warrior::reset() {
+    // Reset to initial position
+    sprite.setPosition(200, 200);
+
+    // Reset facing direction
+    if (isFacingLeft) {
+        sprite.setScale(1.f, 1.f);
+        sprite.setOrigin(0, 0);
+        isFacingLeft = false;
+    }
+
+    // Reset other states
+    isMoving = false;
+    isFighting = false;
+    isAttacking = false;
+
+    // Reset animation
+    currentRow = 0;
+    currentFrame = 0;
+    spriteRect = IntRect(0, 0, spriteWidth, spriteHeight);
+    sprite.setTextureRect(spriteRect);
+
+    // Stop sounds
+    walkingSound.stop();
+
+    // Update hitbox position
+    updateHitboxPosition();
+    // Reset health
+    currentHealth = maxHealth;
+    updateHealthBar();
+    updateHealthBarPosition();
 }

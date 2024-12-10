@@ -10,6 +10,10 @@
 #include "StartScreen.h"
 #include "PauseScreen.h"
 
+#include "GameOverScreen.h" // Include Game Over Screen
+#include "WinScreen.h"      // Include Win Screen
+
+
 using namespace std;
 using namespace sf;
 
@@ -18,6 +22,10 @@ enum class GameState {
     SettingsScreen,
     GameScreen,
     PauseScreen,
+
+    GameOver,
+    Win,
+
 };
 
 int main() {
@@ -27,17 +35,13 @@ int main() {
     // Fullscreen mode flag
     bool isFullscreen = false;
 
-    // --------------------- ASSETS LOADING  ----------------------------//
+    bool restartGame = false;
 
+    // Assets Loading
     Texture& backgroundTexture = AssetManager::getInstance().getTexture("output/assets/background.png");
-
     Font& font = AssetManager::getInstance().getFont("output/assets/IrishGrover-Regular.ttf");
 
-    // --------------------- ASSETS LOADING  ----------------------------//
-   
-
-    // --------------------- INITIALIZATION ----------------------------//
-
+    // Initialization
     StartScreen startScreen(font, backgroundTexture);
     SettingsScreen settingsScreen(font, isFullscreen);
     PauseScreen pauseScreen(font, window);
@@ -45,32 +49,34 @@ int main() {
     Map map;
     Warrior& warrior = Warrior::getInstance();
     Enemy& enemy = Enemy::getInstance();
-
-    // --------------------- INITIALIZATION ----------------------------//
-     
     map.load();
 
     // Storyline elements
     bool isStorylineActive = true;
-    vector<string> storylineTexts = { "Oh no! Our village is under attack!", "We need a brave warrior to save us!" };
+    vector<string> storylineTexts = { "Oh no! Our village is under attack! \nPRESS 'ENTER' ",
+                                       "We need a brave warrior to save us!\nPRESS 'ENTER'" };
     size_t currentTextIndex = 0;
 
     RectangleShape textBox(Vector2f(window.getSize().x * 0.8f, 150));
     textBox.setFillColor(Color(0, 0, 0, 200));
     textBox.setPosition(
         (window.getSize().x - textBox.getSize().x) / 2,
-        window.getSize().y - textBox.getSize().y - 50
-    );
+        window.getSize().y - textBox.getSize().y - 50);
 
     Text storylineText("", font, 30);
     storylineText.setFillColor(Color::White);
     storylineText.setPosition(textBox.getPosition().x + 20, textBox.getPosition().y + 20);
+
+    // Instantiate Game Over and Win screens
+    GameOverScreen gameOverScreen(font);
+    WinScreen winScreen(font);
 
     // Game state management
     GameState currentState = GameState::StartScreen;
 
     // Main game loop
     while (window.isOpen()) {
+        // Event handling
         Event event;
         while (window.pollEvent(event)) {
             if (event.type == Event::Closed) window.close();
@@ -107,15 +113,62 @@ int main() {
                 if (event.key.code == Keyboard::Escape) currentState = GameState::PauseScreen;
             }
 
+            // Handle pause screen events
             if (currentState == GameState::PauseScreen) {
                 bool resumeGame = false, quitToMainMenu = false;
-                pauseScreen.handleEvent(event, resumeGame, quitToMainMenu);
+                pauseScreen.handleEvent(event, resumeGame, quitToMainMenu, restartGame); // Ensure this matches the method signature
                 if (resumeGame) currentState = GameState::GameScreen;
-                if (quitToMainMenu) currentState = GameState::StartScreen;
+                if (quitToMainMenu) {
+                    warrior.reset();
+                    enemy.reset();
+                    currentState = GameState::StartScreen;
+                }
+            }
+
+            // Handle game over and win events
+            if (currentState == GameState::GameOver || currentState == GameState::Win) {
+                if (event.type == Event::KeyPressed) {
+                    if (event.key.code == Keyboard::R) {
+                        warrior.reset(); // Reset warrior state
+                        enemy.reset();   // Reset enemy state
+                        map.load();      // Reload map if necessary
+                        currentState = GameState::StartScreen; // Or directly back to game screen based on your design
+                    }
+                    else if (event.key.code == Keyboard::Q) {
+                        window.close();
+                    }
+                }
             }
         }
 
-        // Rendering logic
+        // Update game logic
+        if (currentState == GameState::GameScreen && !isStorylineActive) {
+            warrior.update(enemy, map);
+            enemy.update(map);
+
+            if (CollisionManager::checkCollision(warrior, enemy)) {
+                cout << "Collision detected! Warrior and Goblin are interacting." << endl;
+                if (enemy.isActive()) {
+                    enemy.dealDamage(warrior); // Assuming warrior takes damage here
+                }
+            }
+
+            // Check for defeat or victory conditions using health points
+            if (warrior.isDefeated()) { // Check if the warrior is defeated based on health
+                currentState = GameState::GameOver;
+            }
+            else if (!enemy.isActive() && enemy.isDefeated()) { // Check if the enemy is defeated
+                currentState = GameState::Win;
+            }
+
+            // Move the enemy towards the player
+            if (enemy.isActive()) {
+                enemy.moveTowardsPlayer(warrior.getSprite().getPosition());
+            }
+        }
+
+        // Rendering
+
         window.clear();
         switch (currentState) {
         case GameState::StartScreen:
@@ -124,11 +177,10 @@ int main() {
 
         case GameState::GameScreen:
             map.render(window);
-            warrior.render(window);
+
             if (enemy.isActive()) {
                 enemy.render(window);
                 window.draw(enemy.getHealthBar());
-                enemy.moveTowardsPlayer(warrior.getSprite().getPosition());
             }
 
             // Render defeat sprite if enemy is defeated
@@ -136,14 +188,8 @@ int main() {
                 enemy.drawDefeatSprite(window);
             }
 
-            if (!isStorylineActive) {
-                warrior.update(enemy, map);
-                enemy.update(map);
-            }
-
-            if (CollisionManager::checkCollision(warrior, enemy)) {
-                cout << "Collision detected! Warrior and Goblin are interacting." << endl;
-            }
+            warrior.render(window);
+            window.draw(warrior.getHealthBar());
 
             if (isStorylineActive) {
                 window.draw(textBox);
@@ -158,6 +204,15 @@ int main() {
 
         case GameState::SettingsScreen:
             settingsScreen.render(window);
+            break;
+
+        case GameState::GameOver:
+            gameOverScreen.render(window); // Render the Game Over screen
+            break;
+
+        case GameState::Win:
+            winScreen.render(window);       // Render the Win screen
+
             break;
         }
 

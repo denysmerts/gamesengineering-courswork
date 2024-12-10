@@ -3,7 +3,11 @@
 
 #include "Character.h"
 #include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp> // Ensure this is included
+
+#include <SFML/Audio.hpp>
+
+class Warrior; // Forward declaration
+
 
 using namespace sf;
 
@@ -11,7 +15,9 @@ class Enemy : public Character {
 public:
     static Enemy& getInstance();
 
-    void update(const Map& map) override; // Correct use of override
+
+    void update(const Map& map) override;
+
     void reset();
     void drawDefeatSprite(RenderWindow& window);
     void moveTowardsPlayer(Vector2f playerPosition);
@@ -23,6 +29,11 @@ public:
 
     Sprite getSprite() const;
     RectangleShape getHealthBar() const;
+
+
+    // New method for dealing damage
+    void dealDamage(Warrior& warrior);
+
 
     Enemy(const Enemy&) = delete;
     Enemy& operator=(const Enemy&) = delete;
@@ -45,9 +56,15 @@ private:
     Sprite defeatSprite;
     RectangleShape healthBar;
 
-    // Proper declarations
+
     SoundBuffer deathSoundBuffer;
     Sound deathSound;
+
+    // New members for attack functionality
+    float attackDamage;
+    Clock attackCooldown;
+    float attackCooldownTime;
 };
 
 #endif
+
