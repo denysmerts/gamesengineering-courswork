@@ -9,6 +9,7 @@
 #include "SettingsScreen.h"
 #include "StartScreen.h"
 #include "PauseScreen.h"
+#include "Villager.h"
 
 #include "GameOverScreen.h" // Include Game Over Screen
 #include "WinScreen.h"      // Include Win Screen
@@ -46,9 +47,16 @@ int main() {
     SettingsScreen settingsScreen(font, isFullscreen);
     PauseScreen pauseScreen(font, window);
 
+    std::vector<sf::Vector2f> villagerPositions = {
+    {750, 150},  // Villager 1 position
+    {900, 200},  // Villager 2 position
+    {1000, 350}  // Villager 3 position
+    };
+
     Map map;
     Warrior& warrior = Warrior::getInstance();
     Enemy& enemy = Enemy::getInstance();
+    Villager& villager = Villager::getInstance();
     map.load();
 
     // Storyline elements
@@ -191,6 +199,9 @@ int main() {
             warrior.render(window);
             window.draw(warrior.getHealthBar());
             warrior.renderUI(window);   
+            for (const auto& position : villagerPositions) {
+                Villager::getInstance().render(window, position);
+            }
 
             if (isStorylineActive) {
                 window.draw(textBox);

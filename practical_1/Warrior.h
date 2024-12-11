@@ -53,7 +53,6 @@ private:
 
     Text warriorLabel;     // Static text label for the health bar
 
-
     FloatRect hitbox;
     Clock attackClock;
 
@@ -62,7 +61,6 @@ private:
 
     SoundBuffer walkingSoundBuffer; // Buffer for walking sound
     Sound walkingSound;             // Sound for walking
-
 
     // New member variables for health bar
     RectangleShape healthBar;
