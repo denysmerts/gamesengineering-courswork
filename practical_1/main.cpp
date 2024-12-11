@@ -171,7 +171,7 @@ int main() {
 
             // Move the enemy towards the player
             if (enemy.isActive()) {
-                enemy.moveTowardsPlayer(warrior.getSprite().getPosition());
+                enemy.moveTowardsPlayer(warrior.getSprite().getPosition(), map);
             }
         }
 

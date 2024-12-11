@@ -125,7 +125,8 @@ bool Enemy::checkCollision(const Sprite& warrior) {
     return sprite.getGlobalBounds().intersects(warrior.getGlobalBounds());
 }
 
-void Enemy::moveTowardsPlayer(Vector2f playerPosition) {
+void Enemy::moveTowardsPlayer(Vector2f playerPosition, Map& map)
+{
     if (!active) return;
 
     Vector2f enemyPosition = sprite.getPosition();
@@ -134,10 +135,17 @@ void Enemy::moveTowardsPlayer(Vector2f playerPosition) {
 
     if (length > 50.0f) {
         direction /= length; // Normalize the direction vector
-        sprite.move(direction * moveSpeed);
-        updateFacingDirection(direction);
+        Vector2f nextPosition = enemyPosition + (direction * moveSpeed);
+
+        // Check if the next position is a valid tile
+        FloatRect nextHitbox(nextPosition.x, nextPosition.y, spriteWidth, spriteHeight);
+        if (!map.isWaterTile(nextHitbox.left, nextHitbox.top)) {
+            sprite.setPosition(nextPosition); // Move enemy only if it's not a boundary
+            updateFacingDirection(direction);
+        }
     }
 }
+
 
 void Enemy::updateFacingDirection(const Vector2f& direction) {
     if (!active) return;

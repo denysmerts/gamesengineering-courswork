@@ -20,7 +20,8 @@ public:
 
     void reset();
     void drawDefeatSprite(RenderWindow& window);
-    void moveTowardsPlayer(Vector2f playerPosition);
+    void moveTowardsPlayer(Vector2f playerPosition, Map& map);
+
     void updateFacingDirection(const Vector2f& direction);
 
     bool checkCollision(const Sprite& warrior);
