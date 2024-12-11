@@ -28,10 +28,10 @@ public:
     Sprite getSprite() const { return sprite; }
     FloatRect getHitbox() const;
 
-    // New methods for health bar
-    void updateHealthBarPosition();
+   
     void takeDamage(float damage);
     void updateHealthBar();
+    void renderUI(RenderWindow& window) const;
     RectangleShape getHealthBar() const;
 
     bool isDefeated() const;
@@ -50,6 +50,9 @@ private:
     bool isFacingLeft;
     bool isAttacking;
     float attackCooldown;
+
+    Text warriorLabel;     // Static text label for the health bar
+
 
     FloatRect hitbox;
     Clock attackClock;

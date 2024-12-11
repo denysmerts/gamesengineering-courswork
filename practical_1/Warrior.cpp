@@ -30,10 +30,21 @@ Warrior::Warrior()
     walkingSound.setBuffer(walkingSoundBuffer);
     walkingSound.setLoop(true); // Loop the walking sound
 
+    warriorLabel.setString("Warrior Health: ");
+
     // Initialize health bar
-    healthBar.setSize(Vector2f(200.f, 10.f));
+    healthBar.setSize(Vector2f(200.f, 30.f));
     healthBar.setFillColor(Color::Green);
-    updateHealthBarPosition();
+    healthBar.setPosition(1650.f, 20.f); // Top-right position for health bar
+
+    // Initialize Warrior label
+    warriorLabel.setFont(AssetManager::getInstance().getFont("output/assets/IrishGrover-Regular.ttf"));
+    warriorLabel.setString("Warrior Health:");
+    warriorLabel.setCharacterSize(24);
+    warriorLabel.setFillColor(Color::White);
+
+    // Position the label to the left of the health bar
+    warriorLabel.setPosition(healthBar.getPosition().x - 180.f, healthBar.getPosition().y + 5.f);
 
 }
 
@@ -138,10 +149,12 @@ void Warrior::updateHitboxPosition() {
     hitbox.left = sprite.getPosition().x + 64;
     hitbox.top = sprite.getPosition().y + 64;
 }
-void Warrior::updateHealthBarPosition() {
-    Vector2f spritePos = sprite.getPosition();
-    healthBar.setPosition(spritePos.x + healthBarOffset.x, spritePos.y + healthBarOffset.y);
+
+void Warrior::renderUI(sf::RenderWindow& window) const {
+    window.draw(warriorLabel); // Draw the static label
+    window.draw(healthBar);    // Draw the health bar
 }
+
 
 void Warrior::takeDamage(float damage) {
     currentHealth -= damage;
@@ -151,7 +164,8 @@ void Warrior::takeDamage(float damage) {
 
 void Warrior::updateHealthBar() {
     float healthPercentage = currentHealth / maxHealth;
-    healthBar.setSize(Vector2f(200.f * healthPercentage, 10.f));
+    healthBar.setSize(Vector2f(200.f * healthPercentage, 30.f));
+  
 }
 
 RectangleShape Warrior::getHealthBar() const {
@@ -231,5 +245,5 @@ void Warrior::reset() {
     // Reset health
     currentHealth = maxHealth;
     updateHealthBar();
-    updateHealthBarPosition();
+   
 }

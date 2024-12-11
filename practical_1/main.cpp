@@ -53,8 +53,8 @@ int main() {
 
     // Storyline elements
     bool isStorylineActive = true;
-    vector<string> storylineTexts = { "Oh no! Our village is under attack! \nPRESS 'ENTER' ",
-                                       "We need a brave warrior to save us!\nPRESS 'ENTER'" };
+    vector<string> storylineTexts = { "Villager: Oh no! Our village is under attack! \nPRESS 'ENTER' ",
+                                       "Villager: We need a brave warrior to save us!\nPRESS 'ENTER'" };
     size_t currentTextIndex = 0;
 
     RectangleShape textBox(Vector2f(window.getSize().x * 0.8f, 150));
@@ -190,6 +190,7 @@ int main() {
 
             warrior.render(window);
             window.draw(warrior.getHealthBar());
+            warrior.renderUI(window);   
 
             if (isStorylineActive) {
                 window.draw(textBox);
