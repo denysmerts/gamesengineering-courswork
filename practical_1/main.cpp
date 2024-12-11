@@ -10,10 +10,9 @@
 #include "StartScreen.h"
 #include "PauseScreen.h"
 #include "Villager.h"
-
-#include "GameOverScreen.h" // Include Game Over Screen
-#include "WinScreen.h"      // Include Win Screen
-
+#include "GameOverScreen.h"
+#include "WinScreen.h"
+#include "StorylineManager.h" // Include StorylineManager
 
 using namespace std;
 using namespace sf;
@@ -23,10 +22,8 @@ enum class GameState {
     SettingsScreen,
     GameScreen,
     PauseScreen,
-
     GameOver,
     Win,
-
 };
 
 int main() {
@@ -35,7 +32,6 @@ int main() {
 
     // Fullscreen mode flag
     bool isFullscreen = false;
-
     bool restartGame = false;
 
     // Assets Loading
@@ -47,10 +43,10 @@ int main() {
     SettingsScreen settingsScreen(font, isFullscreen);
     PauseScreen pauseScreen(font, window);
 
-    std::vector<sf::Vector2f> villagerPositions = {
-    {750, 150},  // Villager 1 position
-    {900, 200},  // Villager 2 position
-    {1000, 350}  // Villager 3 position
+    vector<Vector2f> villagerPositions = {
+        {750, 150},  // Villager 1 position
+        {900, 200},  // Villager 2 position
+        {1000, 350}  // Villager 3 position
     };
 
     Map map;
@@ -59,25 +55,12 @@ int main() {
     Villager& villager = Villager::getInstance();
     map.load();
 
-    // Storyline elements
-    bool isStorylineActive = true;
-    vector<string> storylineTexts = { "Villager: Oh no! Our village is under attack! \nPRESS 'ENTER' ",
-                                       "Villager: We need a brave warrior to save us!\nPRESS 'ENTER'" };
-    size_t currentTextIndex = 0;
-
-    RectangleShape textBox(Vector2f(window.getSize().x * 0.8f, 150));
-    textBox.setFillColor(Color(0, 0, 0, 200));
-    textBox.setPosition(
-        (window.getSize().x - textBox.getSize().x) / 2,
-        window.getSize().y - textBox.getSize().y - 50);
-
-    Text storylineText("", font, 30);
-    storylineText.setFillColor(Color::White);
-    storylineText.setPosition(textBox.getPosition().x + 20, textBox.getPosition().y + 20);
+    // Instantiate StorylineManager
+    StorylineManager storylineManager(font, window.getSize());
 
     // Instantiate Game Over and Win screens
     GameOverScreen gameOverScreen(font, window.getSize());
-    WinScreen winScreen(font, window.getSize()); // Pass window size
+    WinScreen winScreen(font, window.getSize());
 
     // Game state management
     GameState currentState = GameState::StartScreen;
@@ -89,124 +72,112 @@ int main() {
         while (window.pollEvent(event)) {
             if (event.type == Event::Closed) window.close();
 
-            // Start screen interactions
-            if (currentState == GameState::StartScreen) {
+            switch (currentState) {
+            case GameState::StartScreen: {
                 bool startGame = false, openSettings = false, quitGame = false;
                 startScreen.handleEvent(event, window, startGame, openSettings, quitGame);
                 if (startGame) currentState = GameState::GameScreen;
                 if (openSettings) currentState = GameState::SettingsScreen;
                 if (quitGame) window.close();
-            }
+            } break;
 
-            // Settings screen interactions
-            if (currentState == GameState::SettingsScreen) {
+            case GameState::SettingsScreen: {
                 bool backToStartScreen = false;
                 settingsScreen.handleEvent(event, window, backToStartScreen);
-                if (backToStartScreen) {
-                    currentState = GameState::StartScreen;
+                if (backToStartScreen) currentState = GameState::StartScreen;
+            } break;
+
+            case GameState::GameScreen: {
+                if (storylineManager.isStorylineActive()) {
+                    storylineManager.handleInput(event);
                 }
-            }
-
-            // Storyline interaction
-            if (currentState == GameState::GameScreen && isStorylineActive) {
-                if (event.type == Event::KeyPressed && event.key.code == Keyboard::Enter) {
-                    currentTextIndex++;
-                    if (currentTextIndex >= storylineTexts.size()) isStorylineActive = false;
-                    else storylineText.setString(storylineTexts[currentTextIndex]);
+                else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Escape) {
+                    currentState = GameState::PauseScreen;
                 }
-            }
+            } break;
 
-            // Pause screen interactions
-            if (currentState == GameState::GameScreen && !isStorylineActive && event.type == Event::KeyPressed) {
-                if (event.key.code == Keyboard::Escape) currentState = GameState::PauseScreen;
-            }
-
-            // Handle pause screen events
-            if (currentState == GameState::PauseScreen) {
+            case GameState::PauseScreen: {
                 bool resumeGame = false, quitToMainMenu = false;
-                pauseScreen.handleEvent(event, resumeGame, quitToMainMenu, restartGame); // Ensure this matches the method signature
+                pauseScreen.handleEvent(event, resumeGame, quitToMainMenu, restartGame);
                 if (resumeGame) currentState = GameState::GameScreen;
                 if (quitToMainMenu) {
                     warrior.reset();
                     enemy.reset();
                     currentState = GameState::StartScreen;
                 }
-            }
+            } break;
 
-            // Handle game over and win events
-            if (currentState == GameState::GameOver || currentState == GameState::Win) {
+            case GameState::GameOver:
+            case GameState::Win: {
                 if (event.type == Event::KeyPressed) {
                     if (event.key.code == Keyboard::R) {
-                        warrior.reset(); // Reset warrior state
-                        enemy.reset();   // Reset enemy state
-                        map.load();      // Reload map if necessary
-                        currentState = GameState::GameScreen; // Or directly back to game screen based on your design
+                        warrior.reset();
+                        enemy.reset();
+                        map.load();
+                        currentState = GameState::GameScreen;
                     }
                     else if (event.key.code == Keyboard::Q) {
                         currentState = GameState::StartScreen;
                     }
                 }
+            } break;
+
+            default: break;
             }
         }
 
         // Update game logic
-        if (currentState == GameState::GameScreen && !isStorylineActive) {
+        if (currentState == GameState::GameScreen && !storylineManager.isStorylineActive()) {
             warrior.update(enemy, map);
             enemy.update(map);
 
             if (CollisionManager::checkCollision(warrior, enemy)) {
                 cout << "Collision detected! Warrior and Goblin are interacting." << endl;
                 if (enemy.isActive()) {
-                    enemy.dealDamage(warrior); // Assuming warrior takes damage here
+                    enemy.dealDamage(warrior);
                 }
             }
 
-            // Check for defeat or victory conditions using health points
-            if (warrior.isDefeated()) { // Check if the warrior is defeated based on health
-                currentState = GameState::GameOver;
-            }
-            else if (!enemy.isActive() && enemy.isDefeated()) { // Check if the enemy is defeated
-                currentState = GameState::Win;
-            }
+            if (warrior.isDefeated()) currentState = GameState::GameOver;
+            if (!enemy.isActive() && enemy.isDefeated()) currentState = GameState::Win;
 
-            // Move the enemy towards the player
             if (enemy.isActive()) {
                 enemy.moveTowardsPlayer(warrior.getSprite().getPosition(), map);
             }
         }
 
         // Rendering
-
         window.clear();
         switch (currentState) {
         case GameState::StartScreen:
             startScreen.render(window);
             break;
 
+        case GameState::SettingsScreen:
+            settingsScreen.render(window);
+            break;
+
         case GameState::GameScreen:
             map.render(window);
-
-            if (enemy.isActive()) {
-                enemy.render(window);
-                window.draw(enemy.getHealthBar());
+            if (storylineManager.isStorylineActive()) {
+                storylineManager.render(window);
             }
+            else {
+                warrior.render(window);
+                if (enemy.isActive()) {
+                    enemy.render(window);
+                    window.draw(enemy.getHealthBar());
+                }
 
-            // Render defeat sprite if enemy is defeated
-            if (!enemy.isActive() && enemy.isDefeated()) {
-                enemy.drawDefeatSprite(window);
-            }
+                if (!enemy.isActive() && enemy.isDefeated()) {
+                    enemy.drawDefeatSprite(window);
+                }
 
-            warrior.render(window);
-            window.draw(warrior.getHealthBar());
-            warrior.renderUI(window);   
-            for (const auto& position : villagerPositions) {
-                Villager::getInstance().render(window, position);
-            }
-
-            if (isStorylineActive) {
-                window.draw(textBox);
-                storylineText.setString(storylineTexts[currentTextIndex]);
-                window.draw(storylineText);
+                window.draw(warrior.getHealthBar());
+                warrior.renderUI(window);
+                for (const auto& position : villagerPositions) {
+                    Villager::getInstance().render(window, position);
+                }
             }
             break;
 
@@ -214,20 +185,16 @@ int main() {
             pauseScreen.render(window);
             break;
 
-        case GameState::SettingsScreen:
-            settingsScreen.render(window);
-            break;
-
         case GameState::GameOver:
-            gameOverScreen.render(window); // Render the Game Over screen
+            gameOverScreen.render(window);
             break;
 
         case GameState::Win:
-            winScreen.render(window);       // Render the Win screen
-
+            winScreen.render(window);
             break;
-        }
 
+        default: break;
+        }
         window.display();
     }
 
