@@ -142,22 +142,39 @@ void Enemy::moveTowardsPlayer(Vector2f playerPosition) {
 void Enemy::updateFacingDirection(const Vector2f& direction) {
     if (!active) return;
 
+    // Horizontal movement: Flip sprite horizontally
     if (abs(direction.x) > abs(direction.y)) {
         if (direction.x > 0 && isFacingLeft) {
+            // Face right
             sprite.setScale(1, 1);
+            sprite.setOrigin(0, 0);
             isFacingLeft = false;
         }
         else if (direction.x < 0 && !isFacingLeft) {
+            // Face left
             sprite.setScale(-1, 1);
+            sprite.setOrigin(spriteWidth, 0);
             isFacingLeft = true;
+        }
+
+        currentRow = 2; // Always row 2 for horizontal movement
+    }
+    else {
+        // Vertical movement
+        if (direction.y > 0) {
+            currentRow = 3; // Row 3 for downward movement
+        }
+        else {
+            currentRow = 4; // Row 4 for attacking upwards
         }
     }
 
-    currentRow = (abs(direction.y) > abs(direction.x)) ?
-        (direction.y > 0 ? 3 : 0) :
-        (direction.x > 0 ? 1 : 2);
+    // Update the sprite's texture rectangle
     spriteRect.top = currentRow * spriteHeight;
+    sprite.setTextureRect(spriteRect);
 }
+
+
 
 bool Enemy::isDefeated() const {
     return health <= 0;
