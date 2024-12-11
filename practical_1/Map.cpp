@@ -72,10 +72,25 @@ void Map::update() {
 }
 
 void Map::render(RenderWindow& window) {
-     /*Render water tiles*/
+    /* Render water as fullscreen background */
+    Sprite waterBackground;
+    waterBackground.setTexture(waterTexture);
 
- 
+    // Scale the water sprite to cover the entire screen
+    Vector2u windowSize = window.getSize();
+    Vector2u textureSize = waterTexture.getSize();
 
+    float scaleX = static_cast<float>(windowSize.x) / textureSize.x + 1;
+    float scaleY = static_cast<float>(windowSize.y) / textureSize.y + 1;
+
+    waterBackground.setScale(scaleX, scaleY);
+    waterBackground.setPosition(0, 0);
+
+    // Draw the water background layer first
+    window.draw(waterBackground);
+
+
+    // Render water tiles
     for (size_t row = 0; row < MAP_HEIGHT; row++) {
         for (size_t col = 0; col < MAP_WIDTH; col++) {
             size_t index = row * MAP_WIDTH + col;
@@ -85,8 +100,6 @@ void Map::render(RenderWindow& window) {
             window.draw(sprites[index]);
         }
     }
-
-   
 
      /*Render sand and first elevation tiles*/
     for (size_t row = 0; row < MAP_HEIGHT; row++) {
@@ -99,8 +112,6 @@ void Map::render(RenderWindow& window) {
             sprites[index].setTextureRect(IntRect((tileID % 10) * titleWidth, (tileID / 10) * titleHeight, titleWidth, titleHeight));
             sprites[index].setPosition(Vector2f(100 + col * titleWidth, 100 + row * titleHeight));
             window.draw(sprites[index]);
-
-
         }
     }
 
@@ -126,7 +137,6 @@ void Map::render(RenderWindow& window) {
             sprites[index].setPosition(Vector2f(100 + col * titleWidth, 100 + row * titleHeight));
             window.draw(sprites[index]);
 
-         
         }
     }
 
@@ -162,23 +172,10 @@ void Map::render(RenderWindow& window) {
         }
     }
 
-    //RectangleShape debugTile(Vector2f(titleWidth, titleHeight));
-    //debugTile.setFillColor(Color(255, 0, 0, 128)); // Semi-transparent red
-    //for (size_t row = 0; row < MAP_HEIGHT; row++) {
-    //    for (size_t col = 0; col < MAP_WIDTH; col++) {
-    //        if (wallData[row][col] == 14) { // Check if water tile
-    //            debugTile.setPosition(Vector2f(100 + col * titleWidth, 100 + row * titleHeight));
-    //            window.draw(debugTile); // Draw debug overlay
-    //        }
-    //    }
-    //}
-
     // Render objects
     for (const auto& obj : mapObjects) {
         window.draw(obj.sprite);
     }
-
-
 }
 
 bool Map::isWaterTile(float x, float y) const {
