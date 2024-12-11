@@ -3,13 +3,15 @@
 
 #include <SFML/Graphics.hpp>
 
+using namespace sf;
+
 class WinScreen {
 public:
-    WinScreen(const sf::Font& font);
-    void render(sf::RenderWindow& window);
+    WinScreen(const Font& font, const Vector2u& windowSize); // Use window size
+    void render(RenderWindow& window);
 
 private:
-    sf::Text winText;
+    Text winText;
 };
 
-#endif // WINSCREEN_H
+#endif 

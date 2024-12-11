@@ -3,13 +3,15 @@
 
 #include <SFML/Graphics.hpp>
 
+using namespace sf;
+
 class GameOverScreen {
 public:
-    GameOverScreen(const sf::Font& font);
-    void render(sf::RenderWindow& window);
+    GameOverScreen(const Font& font, const Vector2u& windowSize);
+    void render(RenderWindow& window);
 
 private:
-    sf::Text gameOverText;
+    Text gameOverText;
 };
 
-#endif // GAMEOVERSCREEN_H
+#endif 

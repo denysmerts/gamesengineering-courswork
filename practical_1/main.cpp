@@ -68,8 +68,8 @@ int main() {
     storylineText.setPosition(textBox.getPosition().x + 20, textBox.getPosition().y + 20);
 
     // Instantiate Game Over and Win screens
-    GameOverScreen gameOverScreen(font);
-    WinScreen winScreen(font);
+    GameOverScreen gameOverScreen(font, window.getSize());
+    WinScreen winScreen(font, window.getSize()); // Pass window size
 
     // Game state management
     GameState currentState = GameState::StartScreen;
@@ -132,10 +132,10 @@ int main() {
                         warrior.reset(); // Reset warrior state
                         enemy.reset();   // Reset enemy state
                         map.load();      // Reload map if necessary
-                        currentState = GameState::StartScreen; // Or directly back to game screen based on your design
+                        currentState = GameState::GameScreen; // Or directly back to game screen based on your design
                     }
                     else if (event.key.code == Keyboard::Q) {
-                        window.close();
+                        currentState = GameState::StartScreen;
                     }
                 }
             }

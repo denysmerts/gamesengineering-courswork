@@ -1,17 +1,20 @@
 #include "WinScreen.h"
+using namespace sf;
 
-WinScreen::WinScreen(const sf::Font& font) {
+WinScreen::WinScreen(const Font& font, const Vector2u& windowSize) {
     winText.setFont(font);
     winText.setString("You have saved us all!!!\nPress 'R' to Restart\nPress 'Q' to Quit");
     winText.setCharacterSize(60);
-    winText.setFillColor(sf::Color::Green);
+    winText.setFillColor(Color::Green);
 
     // Center the text
-    sf::FloatRect textBounds = winText.getLocalBounds();
-    winText.setOrigin(textBounds.width / 2, textBounds.height / 2); // Set origin to center
-    winText.setPosition(400, 300); // Position at the center of the screen
+    FloatRect textBounds = winText.getLocalBounds();
+    winText.setOrigin(textBounds.left + textBounds.width / 2.0f,
+        textBounds.top + textBounds.height / 2.0f);
+
+    winText.setPosition(windowSize.x / 2.0f, windowSize.y / 2.0f);
 }
 
-void WinScreen::render(sf::RenderWindow& window) {
+void WinScreen::render(RenderWindow& window) {
     window.draw(winText);
 }
