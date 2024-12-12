@@ -40,7 +40,7 @@ int main() {
 
     // Initialization
     StartScreen startScreen(font, backgroundTexture);
-    SettingsScreen settingsScreen(font, isFullscreen);
+    SettingsScreen settingsScreen(font, isFullscreen, VideoMode(1920, 1080), window);
     PauseScreen pauseScreen(font, window);
 
     vector<Vector2f> villagerPositions = {
@@ -200,3 +200,4 @@ int main() {
 
     return 0;
 }
+
